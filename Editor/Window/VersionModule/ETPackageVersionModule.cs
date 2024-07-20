@@ -127,7 +127,8 @@ namespace ET.PackageManager.Editor
 
         private EnumPrefs<EPackagesFilterOperationType> FilterOperationTypePrefs = new("ETPackageVersionModule_FilterOperationType");
 
-        private BoolPrefs SyncDependencyPrefs = new("ETPackageVersionModule_SyncDependency", null, true);
+        private BoolPrefs   SyncDependencyPrefs = new("ETPackageVersionModule_SyncDependency", null, true);
+        private StringPrefs SearchPrefs         = new("ETPackageVersionModule_Search", null, "");
 
         public bool CheckUpdateAllEnd { get; private set; }
 
@@ -142,6 +143,7 @@ namespace ET.PackageManager.Editor
                                              CheckUpdateAllEnd = true;
                                              RequestAllResult  = result;
                                              if (!result) return;
+                                             Search              = SearchPrefs.Value;
                                              FilterType          = FilterTypePrefs.Value;
                                              LastFilterType      = FilterType;
                                              SyncDependency      = SyncDependencyPrefs.Value;
@@ -155,6 +157,7 @@ namespace ET.PackageManager.Editor
         public override void OnDestroy()
         {
             Inst                           = null;
+            SearchPrefs.Value              = Search;
             FilterTypePrefs.Value          = FilterType;
             SyncDependencyPrefs.Value      = SyncDependency;
             FilterOperationTypePrefs.Value = FilterOperationType;
