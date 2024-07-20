@@ -13,7 +13,7 @@ namespace ET.PackageManager.Editor
     /// </summary>
     public class ETPackageAutoTool : OdinMenuEditorWindow
     {
-        [MenuItem("ET/Package 包管理自动化工具")]
+        [MenuItem("ET/ETPackage 包管理自动化工具")]
         private static void OpenWindow()
         {
             var window = GetWindow<ETPackageAutoTool>();
@@ -21,7 +21,7 @@ namespace ET.PackageManager.Editor
                 window.Show();
         }
 
-        //[MenuItem("ET/关闭Package 包管理自动化工具")]
+        //[MenuItem("ET/关闭ETPackage 包管理自动化工具")]
         //错误时使用的 面板出现了错误 会导致如何都打不开 就需要先关闭
         private static void CloseWindow()
         {
@@ -126,13 +126,20 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
+            var lastMenuName = m_LastSelectMenuPrefs.Value;
+
             if (m_FirstInit)
             {
                 m_FirstInit = false;
 
                 foreach (var menu in m_OdinMenuTree.MenuItems)
                 {
-                    if (menu.Name != m_LastSelectMenuPrefs.Value) continue;
+                    if (string.IsNullOrEmpty(lastMenuName))
+                    {
+                        lastMenuName = menu.Name;
+                    }
+
+                    if (menu.Name != lastMenuName) continue;
                     menu.Select();
                     return;
                 }
