@@ -172,7 +172,7 @@ namespace ET.PackageManager.Editor
             ReqCheckUpdate();
         }
 
-        private bool ShowIfReqVersion()
+        public bool ShowIfReqVersion()
         {
             return !IsBan &&IsETPackage && string.IsNullOrEmpty(LastVersion);
         }
@@ -188,7 +188,7 @@ namespace ET.PackageManager.Editor
             IsBan = true;
         }
 
-        private bool ShowIfBanReqVersion()
+        public bool ShowIfBanReqVersion()
         {
             return !IsBan && IsETPackage && string.IsNullOrEmpty(LastVersion);
         }
@@ -204,7 +204,7 @@ namespace ET.PackageManager.Editor
             IsBan = false;
         }
 
-        private bool ShowIfReBanReqVersion()
+        public bool ShowIfReBanReqVersion()
         {
             return IsBan && IsETPackage && string.IsNullOrEmpty(LastVersion);
         }

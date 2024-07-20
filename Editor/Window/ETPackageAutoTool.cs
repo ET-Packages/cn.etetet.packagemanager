@@ -136,7 +136,8 @@ namespace ET.PackageManager.Editor
                 {
                     if (string.IsNullOrEmpty(lastMenuName))
                     {
-                        lastMenuName = menu.Name;
+                        lastMenuName                = menu.Name;
+                        m_LastSelectMenuPrefs.Value = menu.Name;
                     }
 
                     if (menu.Name != lastMenuName) continue;

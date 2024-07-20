@@ -1,26 +1,50 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ET;
 using Newtonsoft.Json.Linq;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
-using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace ET.PackageManager.Editor
 {
+    [Flags]
     public enum EPackagesFilterType
     {
-        [LabelText("ET包")]
-        ET = 1001,
-
         [LabelText("全部")]
-        All = 10000,
+        All = 1 << 30,
+
+        [LabelText("无")]
+        None = 1,
+
+        [LabelText("ET包")]
+        ET = 1 << 1,
+
+        [LabelText("更新")]
+        Update = 1 << 2,
+
+        [LabelText("请求")]
+        Req = 1 << 3,
+
+        [LabelText("禁用")]
+        Ban = 1 << 4,
+
+        [LabelText("解禁")]
+        ReBan = 1 << 5,
+    }
+
+    public enum EPackagesFilterOperationType
+    {
+        [LabelText("唯一")]
+        Only = 0,
+
+        [LabelText("或")]
+        Or = 1,
+
+        [LabelText("与")]
+        And = 2,
     }
 
     /// <summary>
@@ -37,44 +61,60 @@ namespace ET.PackageManager.Editor
         [DisplayAsString(false, 100, TextAlignment.Center, true)]
         private static string m_CheckUpdateAllReqing = "请求所有包最新版本中...";
 
-        [BoxGroup("筛选条件", centerLabel: true)]
+        [BoxGroup("信息", centerLabel: true)]
+        [EnumToggleButtons]
+        [HideLabel]
+        [OnValueChanged("OnFilterOperationTypeChanged")]
+        [ShowIf("CheckUpdateAllEnd")]
+        public EPackagesFilterOperationType FilterOperationType;
+
+        private void OnFilterOperationTypeChanged()
+        {
+            if (FilterOperationType == EPackagesFilterOperationType.Only)
+            {
+                LastFilterType = EPackagesFilterType.None;
+                FilterType     = EPackagesFilterType.None;
+            }
+
+            LoadFilterPackageInfoData();
+        }
+
+        [BoxGroup("信息", centerLabel: true)]
         [EnumToggleButtons]
         [HideLabel]
         [OnValueChanged("OnFilterTypeChanged")]
         [ShowIf("CheckUpdateAllEnd")]
         public EPackagesFilterType FilterType;
 
+        private EPackagesFilterType LastFilterType;
+
         private void OnFilterTypeChanged()
         {
+            if (FilterOperationType == EPackagesFilterOperationType.Only)
+            {
+                if (FilterType != LastFilterType)
+                {
+                    var current = (int)FilterType;
+                    var last    = (int)LastFilterType;
+                    FilterType = (EPackagesFilterType)(current > last ? current - last : last - current);
+                }
+            }
+
+            LastFilterType = FilterType;
             LoadFilterPackageInfoData();
         }
 
-        [BoxGroup("筛选条件", centerLabel: true)]
-        [OnInspectorGUI]
-        [ShowIf("CheckUpdateAllEnd")]
-        private void Space1() { GUILayout.Space(20); }
-
-        [BoxGroup("筛选条件", centerLabel: true)]
+        [BoxGroup("信息", centerLabel: true)]
         [LabelText("循环依赖同步修改")]
         [ShowIf("CheckUpdateAllEnd")]
         public bool SyncDependency = true;
 
-        [BoxGroup("筛选条件", centerLabel: true)]
-        [LabelText("仅显示可更新包")]
-        [ShowIf("CheckUpdateAllEnd")]
-        [OnValueChanged("OnShowUpdatePackageChanged")]
-        public bool ShowUpdatePackage = true;
-
-        private void OnShowUpdatePackageChanged()
-        {
-            LoadFilterPackageInfoData();
-        }
-
-        [BoxGroup("筛选条件", centerLabel: true)]
+        [BoxGroup("信息", centerLabel: true)]
         [LabelText("搜索")]
         [ShowIf("CheckUpdateAllEnd")]
         [OnValueChanged("OnSearchChanged")]
         [Delayed]
+        [ShowInInspector]
         private string Search = "";
 
         private void OnSearchChanged()
@@ -83,9 +123,11 @@ namespace ET.PackageManager.Editor
             LoadFilterPackageInfoData();
         }
 
-        private EnumPrefs<EPackagesFilterType> FilterTypePrefs        = new("YIUIPackagesModule_FilterType", null, EPackagesFilterType.ET);
-        private BoolPrefs                      SyncDependencyPrefs    = new("YIUIPackagesModule_SyncDependency", null, true);
-        private BoolPrefs                      ShowUpdatePackagePrefs = new("YIUIPackagesModule_ShowUpdatePackage", null, true);
+        private EnumPrefs<EPackagesFilterType> FilterTypePrefs = new("ETPackageVersionModule_FilterType", null, EPackagesFilterType.ET);
+
+        private EnumPrefs<EPackagesFilterOperationType> FilterOperationTypePrefs = new("ETPackageVersionModule_FilterOperationType");
+
+        private BoolPrefs SyncDependencyPrefs = new("ETPackageVersionModule_SyncDependency", null, true);
 
         public bool CheckUpdateAllEnd { get; private set; }
 
@@ -100,10 +142,10 @@ namespace ET.PackageManager.Editor
                                              CheckUpdateAllEnd = true;
                                              RequestAllResult  = result;
                                              if (!result) return;
-
-                                             FilterType        = FilterTypePrefs.Value;
-                                             SyncDependency    = SyncDependencyPrefs.Value;
-                                             ShowUpdatePackage = ShowUpdatePackagePrefs.Value;
+                                             FilterType          = FilterTypePrefs.Value;
+                                             LastFilterType      = FilterType;
+                                             SyncDependency      = SyncDependencyPrefs.Value;
+                                             FilterOperationType = FilterOperationTypePrefs.Value;
                                              LoadAllPackageInfoData();
                                              LoadFilterPackageInfoData();
                                              Inst = this;
@@ -112,10 +154,10 @@ namespace ET.PackageManager.Editor
 
         public override void OnDestroy()
         {
-            Inst                         = null;
-            FilterTypePrefs.Value        = FilterType;
-            SyncDependencyPrefs.Value    = SyncDependency;
-            ShowUpdatePackagePrefs.Value = ShowUpdatePackage;
+            Inst                           = null;
+            FilterTypePrefs.Value          = FilterType;
+            SyncDependencyPrefs.Value      = SyncDependency;
+            FilterOperationTypePrefs.Value = FilterOperationType;
         }
 
         [Button("同步", 50)]
@@ -225,13 +267,9 @@ namespace ET.PackageManager.Editor
         {
             m_FilterPackageInfoDataList.Clear();
             m_FilterPackageInfoDataDic.Clear();
+            var packagesFilterTypeValues = Enum.GetValues(typeof(EPackagesFilterType));
             foreach (var data in m_AllPackageInfoDataList)
             {
-                if (ShowUpdatePackage && !data.Value.CanUpdateVersion)
-                {
-                    continue;
-                }
-
                 var name = data.Key;
 
                 if (!string.IsNullOrEmpty(Search) && !name.Contains(Search))
@@ -240,17 +278,92 @@ namespace ET.PackageManager.Editor
                 }
 
                 var infoData = data.Value;
-                var newData  = infoData.Copy();
+                var add      = false;
 
-                if (FilterType == EPackagesFilterType.All)
+                switch (FilterOperationType)
                 {
-                    m_FilterPackageInfoDataList.Add(newData);
-                    m_FilterPackageInfoDataDic.Add(name, newData);
+                    case EPackagesFilterOperationType.Only:
+                        add = GetResult(FilterType);
+                        break;
+                    case EPackagesFilterOperationType.Or:
+                        add = false;
+                        foreach (var value in packagesFilterTypeValues)
+                        {
+                            var filterTypeValue = (EPackagesFilterType)value;
+                            var hasReslut       = FilterType.HasFlag(filterTypeValue);
+                            if (hasReslut)
+                            {
+                                add = GetResult(filterTypeValue);
+                                if (add)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+
+                        break;
+                    case EPackagesFilterOperationType.And:
+                        add = true;
+                        foreach (var value in packagesFilterTypeValues)
+                        {
+                            var filterTypeValue = (EPackagesFilterType)value;
+                            var hasReslut       = FilterType.HasFlag(filterTypeValue);
+                            if (hasReslut)
+                            {
+                                add = GetResult(filterTypeValue);
+                                if (!add)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+
+                        break;
+                    default:
+                        //Debug.LogError($"未实现的操作类型 {FilterOperationType}");
+                        break;
                 }
-                else if (FilterType == EPackagesFilterType.ET && name.Contains("cn.etetet."))
+
+                if (!add) continue;
+
+                var newData = infoData.Copy();
+                m_FilterPackageInfoDataList.Add(newData);
+                m_FilterPackageInfoDataDic.Add(name, newData);
+
+                continue;
+
+                bool GetResult(EPackagesFilterType filterValue)
                 {
-                    m_FilterPackageInfoDataList.Add(newData);
-                    m_FilterPackageInfoDataDic.Add(name, newData);
+                    var result = false;
+                    switch (filterValue)
+                    {
+                        case EPackagesFilterType.All:
+                            result = true;
+                            break;
+                        case EPackagesFilterType.None:
+                            result = false;
+                            break;
+                        case EPackagesFilterType.ET:
+                            result = infoData.IsETPackage;
+                            break;
+                        case EPackagesFilterType.Update:
+                            result = infoData.CanUpdateVersion;
+                            break;
+                        case EPackagesFilterType.Req:
+                            result = infoData.ShowIfReqVersion();
+                            break;
+                        case EPackagesFilterType.Ban:
+                            result = infoData.ShowIfBanReqVersion();
+                            break;
+                        case EPackagesFilterType.ReBan:
+                            result = infoData.ShowIfReBanReqVersion();
+                            break;
+                        default:
+                            //Debug.LogError($"新增了筛选条件 请扩展 {filterValue}");
+                            break;
+                    }
+
+                    return result;
                 }
             }
         }
@@ -258,7 +371,7 @@ namespace ET.PackageManager.Editor
         private void LoadAllPackageInfoData()
         {
             //初始化
-            foreach (var packageInfo in PackageInfo.GetAllRegisteredPackages())
+            foreach (var packageInfo in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
             {
                 var name         = packageInfo.name;
                 var version      = packageInfo.version;
