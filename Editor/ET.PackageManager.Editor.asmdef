@@ -1,8 +1,7 @@
 {
     "name": "ET.PackageManager.Editor",
     "rootNamespace": "ET",
-    "references": [
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,

@@ -252,10 +252,6 @@ namespace ET.PackageManager.Editor
                     m_FilterPackageInfoDataList.Add(newData);
                     m_FilterPackageInfoDataDic.Add(name, newData);
                 }
-                else
-                {
-                    Debug.LogError($"未实现这个类型的筛选 请注意 {FilterType}");
-                }
             }
         }
 

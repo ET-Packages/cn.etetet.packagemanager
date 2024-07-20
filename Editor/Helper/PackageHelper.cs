@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Sirenix.Utilities;
 using UnityEditor;
 using UnityEditor.PackageManager.Requests;
 using UnityEditor.PackageManager;
@@ -33,6 +35,8 @@ namespace ET.PackageManager.Editor
                 return false;
             }
 
+            m_PackageInfoAsset.ReUpdateInfo();
+
             return true;
         }
 
@@ -55,7 +59,7 @@ namespace ET.PackageManager.Editor
                 return false;
             }
 
-            return m_PackageInfoAsset.BanPackageInfo.Contains(name);
+            return m_PackageInfoAsset.BanPackageInfoHash.Contains(name);
         }
 
         public static void BanPackage(string name)
@@ -66,8 +70,13 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
-            m_PackageInfoAsset.BanPackageInfo.Add(name);
-            AssetDatabase.SaveAssets();
+            if (IsBanPackage(name))
+            {
+                return;
+            }
+
+            m_PackageInfoAsset.BanPackageInfoHash.Add(name);
+            UpdateBanPackage();
         }
 
         public static void ReBanPackage(string name)
@@ -78,7 +87,27 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
-            m_PackageInfoAsset.BanPackageInfo.Remove(name);
+            if (!IsBanPackage(name))
+            {
+                return;
+            }
+
+            m_PackageInfoAsset.BanPackageInfoHash.Remove(name);
+            UpdateBanPackage();
+        }
+
+        private static void UpdateBanPackage()
+        {
+            var count = m_PackageInfoAsset.BanPackageInfoHash.Count;
+            m_PackageInfoAsset.BanPackageInfo = new string[count];
+            var index = 0;
+            foreach (var value in m_PackageInfoAsset.BanPackageInfoHash)
+            {
+                m_PackageInfoAsset.BanPackageInfo[index] = value;
+                index++;
+            }
+
+            AssetDatabase.SaveAssetIfDirty(m_PackageInfoAsset);
             AssetDatabase.SaveAssets();
         }
 
@@ -90,7 +119,7 @@ namespace ET.PackageManager.Editor
                 return "";
             }
 
-            if (m_PackageInfoAsset.AllLastPackageInfo.TryGetValue(name, out var version))
+            if (m_PackageInfoAsset.AllLastPackageInfoDic.TryGetValue(name, out var version))
             {
                 return version;
             }
@@ -106,24 +135,59 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
-            m_PackageInfoAsset.AllLastPackageInfo[name] = version;
+            m_PackageInfoAsset.AllLastPackageInfoDic[name] = version;
 
             //Debug.LogError($"{name} 最新版本 {version}");
         }
 
+        private static void UpdateAllLastPackageInfo()
+        {
+            Dictionary<string, PackageInfoKeyValuePair> packageInfo = new();
+            if (m_PackageInfoAsset.AllLastPackageInfo != null)
+            {
+                foreach (var pair in m_PackageInfoAsset.AllLastPackageInfo)
+                {
+                    var name = pair.name;
+                    if (m_PackageInfoAsset.AllLastPackageInfoDic.TryGetValue(name, out string version))
+                    {
+                        pair.Value        = version;
+                        packageInfo[name] = pair;
+                    }
+                }
+            }
+
+            foreach (var info in m_PackageInfoAsset.AllLastPackageInfoDic)
+            {
+                var name = info.Key;
+                if (!packageInfo.ContainsKey(name))
+                {
+                    var version = info.Value;
+                    var pair    = ScriptableObject.CreateInstance<PackageInfoKeyValuePair>();
+                    pair.Key          = name;
+                    pair.Value        = version;
+                    packageInfo[name] = pair;
+                }
+            }
+
+            m_PackageInfoAsset.AllLastPackageInfo = new PackageInfoKeyValuePair[packageInfo.Count];
+            var index = 0;
+            foreach (var pair in packageInfo.Values)
+            {
+                m_PackageInfoAsset.AllLastPackageInfo[index] = pair;
+                index++;
+            }
+
+            AssetDatabase.SaveAssetIfDirty(m_PackageInfoAsset);
+            AssetDatabase.SaveAssets();
+        }
+
         private static bool         m_Requesting;
-        private static bool         m_CheckUpdateAllEnd;
         private static ListRequest  m_ListRequest;
         private static Action<bool> m_RequestAllCallback;
 
         public static void CheckUpdateAll(Action<bool> callback)
         {
             m_RequestAllCallback = null;
-            if (m_CheckUpdateAllEnd)
-            {
-                callback?.Invoke(true);
-                return;
-            }
 
             if (m_Requesting)
             {
@@ -150,7 +214,6 @@ namespace ET.PackageManager.Editor
             }
 
             m_PackageInfoAsset.LastUpdateTime = currentTime;
-
             EditorUtility.DisplayProgressBar("同步包信息", $"请求中...", 0);
             m_RequestAllCallback     =  callback;
             m_Requesting             =  true;
@@ -164,6 +227,8 @@ namespace ET.PackageManager.Editor
 
             if (m_ListRequest.Status == StatusCode.Success)
             {
+                m_PackageInfoAsset.ReSetAllLastPackageInfo();
+
                 foreach (var package in m_ListRequest.Result.Reverse())
                 {
                     var lastVersion = package.version;
@@ -175,6 +240,7 @@ namespace ET.PackageManager.Editor
                     ResetPackageLastInfo(package.name, lastVersion);
                 }
 
+                UpdateAllLastPackageInfo();
                 m_RequestAllCallback?.Invoke(true);
             }
             else
@@ -183,10 +249,10 @@ namespace ET.PackageManager.Editor
                 m_RequestAllCallback?.Invoke(false);
             }
 
+            AssetDatabase.SaveAssetIfDirty(m_PackageInfoAsset);
             AssetDatabase.SaveAssets();
             EditorApplication.update -= CheckUpdateAllProgress;
             m_Requesting             =  false;
-            m_CheckUpdateAllEnd      =  true;
             m_RequestAllCallback     =  null;
             EditorUtility.ClearProgressBar();
         }
@@ -250,7 +316,9 @@ namespace ET.PackageManager.Editor
                     }
 
                     ResetPackageLastInfo(packageInfo.name, lastVersion);
+                    UpdateAllLastPackageInfo();
                     m_RequestTargetCallback?.Invoke(lastVersion);
+                    AssetDatabase.SaveAssetIfDirty(m_PackageInfoAsset);
                     AssetDatabase.SaveAssets();
                 }
                 else

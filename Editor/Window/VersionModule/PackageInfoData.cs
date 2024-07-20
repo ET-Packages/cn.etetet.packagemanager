@@ -200,7 +200,7 @@ namespace ET.PackageManager.Editor
         [ButtonGroup("信息/请求")]
         public void ReBanReqVersion()
         {
-            PackageHelper.BanPackage(Name);
+            PackageHelper.ReBanPackage(Name);
             IsBan = false;
         }
 
