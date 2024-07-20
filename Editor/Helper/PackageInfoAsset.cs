@@ -4,19 +4,20 @@ using UnityEngine;
 
 namespace ET.PackageManager.Editor
 {
-    public class PackageInfoKeyValuePair : ScriptableObject
+    [Serializable]
+    public class PackageLastVersionData
     {
         [SerializeField]
-        public string Key;
+        public string Name;
 
         [SerializeField]
-        public string Value;
+        public string Version;
     }
 
     public class PackageInfoAsset : ScriptableObject
     {
         [SerializeField]
-        public PackageInfoKeyValuePair[] AllLastPackageInfo; //所有包信息的最新版本号
+        public PackageLastVersionData[] AllLastPackageInfo; //所有包信息的最新版本号
 
         [SerializeField]
         public string[] BanPackageInfo; //黑名单 可不请求数据
@@ -40,8 +41,9 @@ namespace ET.PackageManager.Editor
             {
                 foreach (var info in AllLastPackageInfo)
                 {
-                    var key   = info.Key;
-                    var value = info.Value;
+                    if (info == null) continue;
+                    var key   = info.Name;
+                    var value = info.Version;
                     AllLastPackageInfoDic[key] = value;
                 }
             }

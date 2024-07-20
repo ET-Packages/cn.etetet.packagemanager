@@ -106,7 +106,7 @@ namespace ET.PackageManager.Editor
                 index++;
             }
 
-            AssetDatabase.SaveAssetIfDirty(m_PackageInfoAsset);
+            EditorUtility.SetDirty(m_PackageInfoAsset);
             AssetDatabase.SaveAssets();
         }
 
@@ -135,21 +135,19 @@ namespace ET.PackageManager.Editor
             }
 
             m_PackageInfoAsset.AllLastPackageInfoDic[name] = version;
-
-            //Debug.LogError($"{name} 最新版本 {version}");
         }
 
         private static void UpdateAllLastPackageInfo()
         {
-            Dictionary<string, PackageInfoKeyValuePair> packageInfo = new();
+            Dictionary<string, PackageLastVersionData> packageInfo = new();
             if (m_PackageInfoAsset.AllLastPackageInfo != null)
             {
                 foreach (var pair in m_PackageInfoAsset.AllLastPackageInfo)
                 {
-                    var name = pair.name;
+                    var name = pair.Name;
                     if (m_PackageInfoAsset.AllLastPackageInfoDic.TryGetValue(name, out string version))
                     {
-                        pair.Value        = version;
+                        pair.Version      = version;
                         packageInfo[name] = pair;
                     }
                 }
@@ -161,14 +159,14 @@ namespace ET.PackageManager.Editor
                 if (!packageInfo.ContainsKey(name))
                 {
                     var version = info.Value;
-                    var pair    = ScriptableObject.CreateInstance<PackageInfoKeyValuePair>();
-                    pair.Key          = name;
-                    pair.Value        = version;
+                    var pair    = new PackageLastVersionData();
+                    pair.Name         = name;
+                    pair.Version      = version;
                     packageInfo[name] = pair;
                 }
             }
 
-            m_PackageInfoAsset.AllLastPackageInfo = new PackageInfoKeyValuePair[packageInfo.Count];
+            m_PackageInfoAsset.AllLastPackageInfo = new PackageLastVersionData[packageInfo.Count];
             var index = 0;
             foreach (var pair in packageInfo.Values)
             {
@@ -176,7 +174,7 @@ namespace ET.PackageManager.Editor
                 index++;
             }
 
-            AssetDatabase.SaveAssetIfDirty(m_PackageInfoAsset);
+            EditorUtility.SetDirty(m_PackageInfoAsset);
             AssetDatabase.SaveAssets();
         }
 
@@ -248,8 +246,6 @@ namespace ET.PackageManager.Editor
                 m_RequestAllCallback?.Invoke(false);
             }
 
-            AssetDatabase.SaveAssetIfDirty(m_PackageInfoAsset);
-            AssetDatabase.SaveAssets();
             EditorApplication.update -= CheckUpdateAllProgress;
             m_Requesting             =  false;
             m_RequestAllCallback     =  null;
@@ -317,8 +313,6 @@ namespace ET.PackageManager.Editor
                     ResetPackageLastInfo(packageInfo.name, lastVersion);
                     UpdateAllLastPackageInfo();
                     m_RequestTargetCallback?.Invoke(lastVersion);
-                    AssetDatabase.SaveAssetIfDirty(m_PackageInfoAsset);
-                    AssetDatabase.SaveAssets();
                 }
                 else
                 {
