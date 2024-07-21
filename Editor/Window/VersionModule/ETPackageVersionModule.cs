@@ -170,7 +170,7 @@ namespace ET.PackageManager.Editor
         [ShowIf("CheckUpdateAllEnd")]
         public void SyncPackages()
         {
-            UpdatePackagesInfo();
+            Task.Run(UpdatePackagesInfo);
         }
 
         private async Task UpdatePackagesInfo()
@@ -187,9 +187,9 @@ namespace ET.PackageManager.Editor
             ETPackageAutoTool.CloseWindowRefresh();
         }
 
-        public async Task SyncPackageUpdate(string name, string version)
+        public void SyncPackageUpdate(string name, string version)
         {
-            await UpdatePackagesInfo();
+            Task.Run(UpdatePackagesInfo);
 
             //EditorUtility.DisplayProgressBar($"更新包: {name} >> {version}", "", 0);
             //TODO 其他后续一键功能
