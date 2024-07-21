@@ -1,9 +1,9 @@
-﻿{
+{
   "name": "cn.etetet.packagemanager",
   "displayName": "ET.PackageManager",
   "version": "0.0.1",
   "unity": "2022.3",
-  "description": "YIUI PackageTool >>> 文档: https://lib9kmxvq7k.feishu.cn/wiki/ES7Gwz4EAiVGKSkotY5cRbTznuh",
+  "description": "ETPackageManager >>> \u6587\u6863: https://lib9kmxvq7k.feishu.cn/wiki/DzqwwwBJvixRvtkCI4dcatGcnAd",
   "author": {
     "name": "YIUI",
     "url": "https://github.com/LiShengYang-yiyi/YIUI/tree/YIUI-ET9.0"
@@ -13,8 +13,6 @@
     "url": "https://github.com/LiShengYang-yiyi/YIUI/tree/YIUI-ET9.0"
   },
   "relatedPackages": {},
-  "dependencies": {
-  },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@ET-Packages"
   }
