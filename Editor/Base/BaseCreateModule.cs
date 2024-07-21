@@ -1,3 +1,4 @@
+#if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 
 namespace ET.PackageManager.Editor
@@ -18,3 +19,4 @@ namespace ET.PackageManager.Editor
         }
     }
 }
+#endif

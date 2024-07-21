@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if ODIN_INSPECTOR
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Sirenix.OdinInspector.Editor;
@@ -176,3 +177,4 @@ namespace ET.PackageManager.Editor
         }
     }
 }
+#endif

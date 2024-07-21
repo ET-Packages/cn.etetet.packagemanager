@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿#if ODIN_INSPECTOR
 using System.Text.RegularExpressions;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -143,3 +143,4 @@ namespace ET.PackageManager.Editor
         #endregion
     }
 }
+#endif

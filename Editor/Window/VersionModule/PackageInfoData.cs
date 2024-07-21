@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if ODIN_INSPECTOR
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Sirenix.OdinInspector;
@@ -361,3 +362,4 @@ namespace ET.PackageManager.Editor
         }
     }
 }
+#endif

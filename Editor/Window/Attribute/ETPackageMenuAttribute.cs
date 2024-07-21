@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if ODIN_INSPECTOR
+using System;
 
 namespace ET.PackageManager.Editor
 {
@@ -24,3 +25,4 @@ namespace ET.PackageManager.Editor
         public int Order;
     }
 }
+#endif

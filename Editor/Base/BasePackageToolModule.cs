@@ -1,4 +1,5 @@
-﻿using Sirenix.OdinInspector;
+﻿#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 
@@ -24,3 +25,4 @@ namespace ET.PackageManager.Editor
         }
     }
 }
+#endif
