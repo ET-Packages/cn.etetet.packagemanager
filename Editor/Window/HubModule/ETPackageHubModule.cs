@@ -6,8 +6,8 @@ using UnityEngine;
 
 namespace ET.PackageManager.Editor
 {
-    [ETPackageMenu("更新")]
-    public class ETPackageUpdateModule : BasePackageToolModule
+    [ETPackageMenu("库")]
+    public class ETPackageHubModule : BasePackageToolModule
     {
         public override void Initialize()
         {
