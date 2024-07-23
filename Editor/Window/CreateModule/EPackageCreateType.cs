@@ -13,5 +13,4 @@ namespace ET.PackageManager.Editor
         Model      = 1 << 4,
         ModelView  = 1 << 5,
     }
-
 }

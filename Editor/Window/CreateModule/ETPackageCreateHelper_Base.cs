@@ -4,9 +4,10 @@
     {
         public static bool CreateBase(ETPackageCreateData codeData)
         {
-            var code = new ETPackageCreatePackageJsonCode(out bool result, "", codeData);
-            return result;
+            new ETPackageCreatePackageJsonCode(codeData);
+            new ETPackageCreatePackageGitCode(codeData);
+
+            return true;
         }
     }
-
 }

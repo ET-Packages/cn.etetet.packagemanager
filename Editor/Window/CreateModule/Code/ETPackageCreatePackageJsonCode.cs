@@ -13,17 +13,28 @@
         private readonly bool m_ShowTips = false;
         public override  bool ShowTips => m_ShowTips;
 
-        public ETPackageCreatePackageJsonCode(out bool result, string authorName, ETPackageCreateData codeData) : base(authorName)
+        public ETPackageCreatePackageJsonCode(ETPackageCreateData codeData) : base("")
+        {
+            Create(codeData);
+        }
+
+        public ETPackageCreatePackageJsonCode(out bool result, ETPackageCreateData codeData) : base("")
+        {
+            result = Create(codeData);
+        }
+
+        private bool Create(ETPackageCreateData codeData)
         {
             var path     = $"{codeData.PackagePath}/package.json";
             var template = $"{ETPackageCreateHelper.ETPackageCreateTemplatePath}/package.txt";
             CreateVo = new CreateVo(template, path);
 
-            ValueDic["PackageName"] = codeData.PackageName;
-            ValueDic["DisplayName"] = codeData.DisplayName;
-            ValueDic["Description"] = codeData.Description;
+            ValueDic["PackageAuthor"] = codeData.PackageAuthor;
+            ValueDic["PackageName"]   = codeData.PackageName;
+            ValueDic["DisplayName"]   = codeData.DisplayName;
+            ValueDic["Description"]   = codeData.Description;
 
-            result = CreateNewFile();
+            return CreateNewFile();
         }
     }
 }

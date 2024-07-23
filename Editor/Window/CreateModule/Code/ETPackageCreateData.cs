@@ -2,9 +2,13 @@
 {
     public class ETPackageCreateData
     {
-        public string PackagePath;
-        public string PackageName;
-        public string DisplayName;
-        public string Description;
+        public string                 PackageAuthor;
+        public string                 PackagePath;
+        public int                    PackageId;
+        public string                 PackageName;
+        public string                 AssemblyName;
+        public string                 DisplayName;
+        public string                 Description;
+        public EPackageRuntimeRefType RuntimeRefType;
     }
 }

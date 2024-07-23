@@ -36,6 +36,10 @@ namespace ET.PackageManager.Editor
         }
 
         [Required]
+        [LabelText("作者")]
+        public string PackageAuthor;
+
+        [Required]
         [LabelText("模块名称 cn.etetet.{0}")]
         public string PackageName;
 
@@ -48,6 +52,11 @@ namespace ET.PackageManager.Editor
         [LabelText("显示名称")]
         public string DisplayName;
 
+        [Required]
+        [LabelText("程序集名称")]
+        [ShowIf("OnRuntimeRefTypeShowIf")]
+        public string AssemblyName;
+
         [LabelText("描述")]
         public string Description;
 
@@ -57,6 +66,7 @@ namespace ET.PackageManager.Editor
         private string PackagePath;
 
         [Button("生成", 50)]
+        [PropertyOrder(-999)]
         public void CreatePackage()
         {
             if ((int)PackageCreateType == 0)
@@ -65,9 +75,27 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
+            if (string.IsNullOrEmpty(PackageAuthor))
+            {
+                UnityTipsHelper.Show("必须输入 作者名称");
+                return;
+            }
+
+            if (OnRuntimeRefTypeShowIf() && string.IsNullOrEmpty(AssemblyName))
+            {
+                UnityTipsHelper.Show("必须输入 程序集名称");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(DisplayName))
+            {
+                UnityTipsHelper.Show("必须输入 显示名称");
+                return;
+            }
+
             if (string.IsNullOrEmpty(PackageName))
             {
-                UnityTipsHelper.Show("请输入模块名称");
+                UnityTipsHelper.Show("必须输入 模块名称");
                 return;
             }
 
@@ -76,7 +104,7 @@ namespace ET.PackageManager.Editor
 
             if (!ETPackageCreateHelper.CreateDirectory(projPath, ForceCreate))
             {
-                UnityTipsHelper.Show($"模块[ {PackageName} ]已存在 请勿重复创建");
+                UnityTipsHelper.Show($"模块[ {PackageName} ] 已存在 请勿重复创建");
                 return;
             }
 
@@ -88,15 +116,18 @@ namespace ET.PackageManager.Editor
 
         private void CreateTargetModule()
         {
-            
-            ETPackageCreateHelper.CreateBase(new ETPackageCreateData
-            {
-                PackagePath = PackagePath,
-                PackageName = PackageName,
-                DisplayName = DisplayName,
-                Description = Description,
-            });
-            
+            var data = new ETPackageCreateData
+                       {
+                           PackageAuthor  = this.PackageAuthor,
+                           PackagePath    = this.PackagePath,
+                           PackageId      = this.PackageId,
+                           PackageName    = this.PackageName,
+                           AssemblyName   = this.AssemblyName,
+                           DisplayName    = this.DisplayName,
+                           Description    = this.Description,
+                           RuntimeRefType = this.RuntimeRefType,
+                       };
+
             var createTypeValues = Enum.GetValues(typeof(EPackageCreateType));
 
             foreach (var value in createTypeValues)
@@ -131,6 +162,8 @@ namespace ET.PackageManager.Editor
                     }
                 }
             }
+
+            ETPackageCreateHelper.CreateBase(data);
         }
     }
 }
