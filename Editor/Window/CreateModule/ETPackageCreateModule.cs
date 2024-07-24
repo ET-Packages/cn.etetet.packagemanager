@@ -8,7 +8,7 @@ namespace ET.PackageManager.Editor
     /// <summary>
     /// 一键生成属于自己的Package
     /// </summary>
-    [ETPackageMenu("生成")]
+    [ETPackageMenu("创建")]
     public class ETPackageCreateModule : BasePackageToolModule
     {
         public override void Initialize()
@@ -22,17 +22,28 @@ namespace ET.PackageManager.Editor
         [BoxGroup("生成类型", centerLabel: true)]
         [EnumToggleButtons]
         [HideLabel]
-        public EPackageCreateType PackageCreateType;
+        public EPackageCreateType PackageCreateType = EPackageCreateType.All;
 
         [BoxGroup("Runtime引用类型", centerLabel: true)]
         [EnumToggleButtons]
         [HideLabel]
         [ShowIf("OnRuntimeRefTypeShowIf")]
-        public EPackageRuntimeRefType RuntimeRefType;
+        public EPackageRuntimeRefType RuntimeRefType = EPackageRuntimeRefType.All;
 
         private bool OnRuntimeRefTypeShowIf()
         {
             return PackageCreateType.HasFlag(EPackageCreateType.Runtime);
+        }
+
+        [BoxGroup("CodeMode类型", centerLabel: true)]
+        [EnumToggleButtons]
+        [HideLabel]
+        [ShowIf("OnFolderTypeShowIf")]
+        public EPackageCreateFolderType FolderType = EPackageCreateFolderType.All;
+
+        private bool OnFolderTypeShowIf()
+        {
+            return PackageCreateType.HasFlag(EPackageCreateType.Hotfix) || PackageCreateType.HasFlag(EPackageCreateType.Model);
         }
 
         [Required]
@@ -65,7 +76,8 @@ namespace ET.PackageManager.Editor
 
         private string PackagePath;
 
-        [Button("生成", 50)]
+        [Button("创建", 50)]
+        [GUIColor(0f, 1f, 0f)]
         [PropertyOrder(-999)]
         public void CreatePackage()
         {
@@ -111,22 +123,31 @@ namespace ET.PackageManager.Editor
             CreateTargetModule();
 
             UnityTipsHelper.Show($"创建成功 [ {PackageName} ]");
+
+            var globalConfig = ScriptableLoader.Load<ET.GlobalConfig>();
+            if (globalConfig != null)
+            {
+                CodeModeChangeHelper.ChangeToCodeMode(globalConfig.CodeMode.ToString());
+            }
+
+            ScriptsReferencesHelper.Run();
             ETPackageAutoTool.CloseWindowRefresh();
         }
 
         private void CreateTargetModule()
         {
             var data = new ETPackageCreateData
-                       {
-                           PackageAuthor  = this.PackageAuthor,
-                           PackagePath    = this.PackagePath,
-                           PackageId      = this.PackageId,
-                           PackageName    = this.PackageName,
-                           AssemblyName   = this.AssemblyName,
-                           DisplayName    = this.DisplayName,
-                           Description    = this.Description,
-                           RuntimeRefType = this.RuntimeRefType,
-                       };
+            {
+                PackageAuthor  = this.PackageAuthor,
+                PackagePath    = this.PackagePath,
+                PackageId      = this.PackageId,
+                PackageName    = this.PackageName,
+                AssemblyName   = this.AssemblyName,
+                DisplayName    = this.DisplayName,
+                Description    = this.Description,
+                RuntimeRefType = this.RuntimeRefType,
+                FolderType     = this.FolderType,
+            };
 
             var createTypeValues = Enum.GetValues(typeof(EPackageCreateType));
 
@@ -144,17 +165,57 @@ namespace ET.PackageManager.Editor
                     switch (createType)
                     {
                         case EPackageCreateType.Runtime:
-
+                            new ETPackageCreatePackageAsmdefCode(data);
+                            new ETPackageCreatePackageIgnoreAsmdefCode(data);
                             break;
                         case EPackageCreateType.Editor:
+                            new ETPackageCreatePackageAsmdefEditorCode(data);
                             break;
                         case EPackageCreateType.Hotfix:
+                            var hotfixClient = FolderType.HasFlag(EPackageCreateFolderType.Client);
+                            if (hotfixClient)
+                            {
+                                ETPackageCreateHelper.CreateDirectory(EditorHelper.GetProjPath($"{PackagePath}/Scripts/Hotfix/Client"));
+                            }
+
+                            var hotfixServer = FolderType.HasFlag(EPackageCreateFolderType.Server);
+                            if (hotfixServer)
+                            {
+                                ETPackageCreateHelper.CreateDirectory(EditorHelper.GetProjPath($"{PackagePath}/Scripts/Hotfix/Server"));
+                            }
+
+                            var hotfixShare = FolderType.HasFlag(EPackageCreateFolderType.Share);
+                            if (hotfixShare)
+                            {
+                                ETPackageCreateHelper.CreateDirectory(EditorHelper.GetProjPath($"{PackagePath}/Scripts/Hotfix/Share"));
+                            }
+
                             break;
                         case EPackageCreateType.HotfixView:
+                            ETPackageCreateHelper.CreateDirectory(EditorHelper.GetProjPath($"{PackagePath}/Scripts/HotfixView/Client"));
                             break;
                         case EPackageCreateType.Model:
+                            var modelClient = FolderType.HasFlag(EPackageCreateFolderType.Client);
+                            if (modelClient)
+                            {
+                                ETPackageCreateHelper.CreateDirectory(EditorHelper.GetProjPath($"{PackagePath}/Scripts/Model/Client"));
+                            }
+
+                            var modelServer = FolderType.HasFlag(EPackageCreateFolderType.Server);
+                            if (modelServer)
+                            {
+                                ETPackageCreateHelper.CreateDirectory(EditorHelper.GetProjPath($"{PackagePath}/Scripts/Model/Server"));
+                            }
+
+                            var modelShare = FolderType.HasFlag(EPackageCreateFolderType.Share);
+                            if (modelShare)
+                            {
+                                ETPackageCreateHelper.CreateDirectory(EditorHelper.GetProjPath($"{PackagePath}/Scripts/Model/Share"));
+                            }
+
                             break;
                         case EPackageCreateType.ModelView:
+                            ETPackageCreateHelper.CreateDirectory(EditorHelper.GetProjPath($"{PackagePath}/Scripts/ModelView/Client"));
                             break;
                         default:
                             Debug.LogError($"未实现的功能 {createType}");
@@ -163,7 +224,8 @@ namespace ET.PackageManager.Editor
                 }
             }
 
-            ETPackageCreateHelper.CreateBase(data);
+            new ETPackageCreatePackageJsonCode(data);
+            new ETPackageCreatePackageGitCode(data);
         }
     }
 }
