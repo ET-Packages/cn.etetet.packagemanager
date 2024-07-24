@@ -170,7 +170,7 @@ namespace ET.PackageManager.Editor
         [ShowIf("CheckUpdateAllEnd")]
         public void SyncPackages()
         {
-            Task.Run(UpdatePackagesInfo);
+            UpdatePackagesInfo();
         }
 
         private async Task UpdatePackagesInfo()
