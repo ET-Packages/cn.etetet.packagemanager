@@ -16,6 +16,12 @@ namespace ET.PackageManager.Editor
         public override void OnDestroy()
         {
         }
+
+        [Button]
+        public void Init()
+        {
+            PackageHubHelper.Init();
+        }
     }
 }
 #endif
