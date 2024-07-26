@@ -22,6 +22,11 @@ namespace ET.PackageManager.Editor
         public PackageHubSynthesis()
         {
             AllPackages.Clear();
+            if (PackageHubHelper.PackageHubAsset == null)
+            {
+                Debug.LogError($" PackageHubAsset == null ");
+                return;
+            }
             foreach (var package in PackageHubHelper.PackageHubAsset.AllPackageData.Values)
             {
                 AllPackages.Add(package);

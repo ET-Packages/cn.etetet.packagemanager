@@ -153,7 +153,6 @@ namespace ET.PackageManager.Editor
             }
 
             EditorUtility.SetDirty(m_PackageInfoAsset);
-            AssetDatabase.SaveAssets();
         }
 
         public static string GetPackageLastVersion(string name)
@@ -239,7 +238,6 @@ namespace ET.PackageManager.Editor
             }
 
             EditorUtility.SetDirty(m_PackageInfoAsset);
-            AssetDatabase.SaveAssets();
         }
 
         private static bool         m_Requesting;
@@ -252,7 +250,7 @@ namespace ET.PackageManager.Editor
 
             if (m_Requesting)
             {
-                //Debug.Log($"请求中请稍等...请勿频繁请求");
+                Debug.Log($"请求中请稍等...请勿频繁请求");
                 callback?.Invoke(false);
                 return;
             }
@@ -354,24 +352,24 @@ namespace ET.PackageManager.Editor
             m_RequestTargets.Add(name);
 
             new PackageRequestTarget(name, (packageInfo) =>
-            {
-                m_RequestTargets.Remove(name);
-                if (showBar)
-                {
-                    EditorUtility.ClearProgressBar();
-                }
+                                           {
+                                               m_RequestTargets.Remove(name);
+                                               if (showBar)
+                                               {
+                                                   EditorUtility.ClearProgressBar();
+                                               }
 
-                if (packageInfo == null) return;
-                var lastVersion = packageInfo.version;
-                if (packageInfo.versions != null)
-                {
-                    lastVersion = packageInfo.versions.latest;
-                }
+                                               if (packageInfo == null) return;
+                                               var lastVersion = packageInfo.version;
+                                               if (packageInfo.versions != null)
+                                               {
+                                                   lastVersion = packageInfo.versions.latest;
+                                               }
 
-                ResetPackageLastInfo(packageInfo.name, lastVersion);
-                UpdateAllLastPackageInfo();
-                callback?.Invoke(lastVersion);
-            });
+                                               ResetPackageLastInfo(packageInfo.name, lastVersion);
+                                               UpdateAllLastPackageInfo();
+                                               callback?.Invoke(lastVersion);
+                                           });
         }
     }
 }

@@ -30,6 +30,14 @@ namespace ET.PackageManager.Editor
         private void Init()
         {
             if (m_InitEnd) return;
+
+            foreach (var menu in Tree.MenuItems)
+            {
+                if (menu.Name != ModuleName) continue;
+                MenuItem = menu;
+                break;
+            }
+
             Initialize();
             m_InitEnd = true;
         }

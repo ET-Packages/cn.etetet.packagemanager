@@ -19,7 +19,23 @@ namespace ET.PackageManager.Editor
         public const string ETPackageHubAssetPath = PackageHelper.ETPackageAssetsFolderPath + "/PackageHubAsset.asset";
 
         private static PackageHubAsset m_PackageHubAsset;
-        public static  PackageHubAsset PackageHubAsset => m_PackageHubAsset;
+
+        public static PackageHubAsset PackageHubAsset
+        {
+            get
+            {
+                if (m_PackageHubAsset == null)
+                {
+                    if (!LoadAsset())
+                    {
+                        Debug.LogError($"m_PackageHubAsset == null");
+                        return null;
+                    }
+                }
+
+                return m_PackageHubAsset;
+            }
+        }
 
         public static void SaveAsset()
         {
@@ -203,10 +219,10 @@ namespace ET.PackageManager.Editor
                 int    downloadCount    = int.Parse(downloadCountStr);
 
                 dic[packageName] = new()
-                {
-                    PackageName   = packageName,
-                    DownloadValue = downloadCount
-                };
+                                   {
+                                       PackageName   = packageName,
+                                       DownloadValue = downloadCount
+                                   };
             }
 
             return true;

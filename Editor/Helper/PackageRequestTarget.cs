@@ -8,6 +8,7 @@ namespace ET.PackageManager.Editor
 {
     public class PackageRequestTarget
     {
+        private string                                         m_Name;
         private SearchRequest                                  m_TargetRequest;
         private Action<UnityEditor.PackageManager.PackageInfo> m_RequestTargetCallback;
 
@@ -20,10 +21,9 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
-            m_RequestTargetCallback = callback;
-
-            m_TargetRequest = Client.Search(name);
-
+            m_Name                   =  name;
+            m_RequestTargetCallback  =  callback;
+            m_TargetRequest          =  Client.Search(name);
             EditorApplication.update += CheckUpdateTargetProgress;
         }
 
@@ -40,12 +40,13 @@ namespace ET.PackageManager.Editor
                 }
                 else
                 {
+                    Debug.LogError($"{m_Name} Result >= 1");
                     m_RequestTargetCallback?.Invoke(null);
                 }
             }
             else
             {
-                Debug.LogError(m_TargetRequest.Error.message);
+                Debug.LogError($"请求失败:{m_Name} 如果确定此包不可用可禁用就不会请求了!! \n{m_TargetRequest.Error.message}");
                 m_RequestTargetCallback?.Invoke(null);
             }
 

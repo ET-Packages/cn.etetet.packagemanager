@@ -30,22 +30,28 @@ namespace ET.PackageManager.Editor
             RequestAllResult  = false;
 
             PackageHelper.CheckUpdateAll((result) =>
-            {
-                if (!result)
-                {
-                    UnityTipsHelper.ShowError("获取所有包最新数据失败！");
-                    return;
-                }
+                                         {
+                                             if (!result)
+                                             {
+                                                 UnityTipsHelper.ShowError("获取所有包最新数据失败！请检查网络或关闭工具后重试");
+                                                 return;
+                                             }
 
-                PackageHubHelper.CheckUpdate((result2) =>
-                {
-                    CheckUpdateAllEnd = true;
-                    RequestAllResult  = result2;
-                    if (!result2) return;
-                    m_PackageHubSynthesis = new();
-                    Inst                  = this;
-                });
-            });
+                                             SelectSelf();
+                                             PackageHubHelper.CheckUpdate((result2) =>
+                                                                          {
+                                                                              if (!result2)
+                                                                              {
+                                                                                  UnityTipsHelper.ShowError("获取所有包最新数据失败！请检查网络或关闭工具后重试");
+                                                                                  return;
+                                                                              }
+
+                                                                              CheckUpdateAllEnd     = true;
+                                                                              RequestAllResult      = true;
+                                                                              m_PackageHubSynthesis = new();
+                                                                              Inst                  = this;
+                                                                          });
+                                         });
         }
 
         public override void OnDestroy()
