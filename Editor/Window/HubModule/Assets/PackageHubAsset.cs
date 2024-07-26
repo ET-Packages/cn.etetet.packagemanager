@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if ODIN_INSPECTOR
+using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
@@ -11,7 +12,7 @@ namespace ET.PackageManager.Editor
         [OdinSerialize]
         [ReadOnly]
         [LabelText("ET包信息")]
-        public Dictionary<string, PackageHubData> PackageDict = new();
+        public Dictionary<string, PackageHubData> AllPackageData = new();
 
         [NonSerialized]
         [OdinSerialize]
@@ -24,3 +25,4 @@ namespace ET.PackageManager.Editor
         public long UpdateInterval = 3600; //更新间隔 真不需要很高的频率 哪里有插件一直更新的
     }
 }
+#endif

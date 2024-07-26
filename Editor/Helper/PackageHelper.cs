@@ -19,8 +19,46 @@ namespace ET.PackageManager.Editor
 
         private static PackageInfoAsset m_PackageInfoAsset;
 
+        public static PackageInfoAsset PackageInfoAsset
+        {
+            get
+            {
+                if (m_PackageInfoAsset == null)
+                {
+                    var result = LoadAsset();
+                    if (!result)
+                    {
+                        Debug.LogError($"PackageInfoAsset == null");
+                        return null;
+                    }
+                }
+
+                return m_PackageInfoAsset;
+            }
+        }
+
+        private static readonly Dictionary<string, UnityEditor.PackageManager.PackageInfo> m_CurrentRegisteredPackages = new();
+        public static           Dictionary<string, UnityEditor.PackageManager.PackageInfo> CurrentRegisteredPackages => m_CurrentRegisteredPackages;
+
+        private static void GetAllRegisteredPackages()
+        {
+            m_CurrentRegisteredPackages.Clear();
+            foreach (var packageInfo in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
+            {
+                var name = packageInfo.name;
+                m_CurrentRegisteredPackages.Add(name, packageInfo);
+            }
+        }
+
         private static bool LoadAsset()
         {
+            GetAllRegisteredPackages();
+
+            if (m_PackageInfoAsset != null)
+            {
+                return true;
+            }
+
             m_PackageInfoAsset = AssetDatabase.LoadAssetAtPath<PackageInfoAsset>(ETPackageInfoAssetPath);
 
             if (m_PackageInfoAsset == null)
@@ -65,8 +103,12 @@ namespace ET.PackageManager.Editor
         {
             if (m_PackageInfoAsset == null)
             {
-                Debug.LogError($"PackageInfoAsset == null");
-                return;
+                var result = LoadAsset();
+                if (!result)
+                {
+                    Debug.LogError($"PackageInfoAsset == null");
+                    return;
+                }
             }
 
             if (IsBanPackage(name))
@@ -82,8 +124,12 @@ namespace ET.PackageManager.Editor
         {
             if (m_PackageInfoAsset == null)
             {
-                Debug.LogError($"PackageInfoAsset == null");
-                return;
+                var result = LoadAsset();
+                if (!result)
+                {
+                    Debug.LogError($"PackageInfoAsset == null");
+                    return;
+                }
             }
 
             if (!IsBanPackage(name))
@@ -114,8 +160,12 @@ namespace ET.PackageManager.Editor
         {
             if (m_PackageInfoAsset == null)
             {
-                Debug.LogError($"PackageInfoAsset == null");
-                return "";
+                var result = LoadAsset();
+                if (!result)
+                {
+                    Debug.LogError($"PackageInfoAsset == null");
+                    return "";
+                }
             }
 
             if (m_PackageInfoAsset.AllLastPackageInfoDic.TryGetValue(name, out var version))
@@ -126,12 +176,26 @@ namespace ET.PackageManager.Editor
             return "";
         }
 
+        public static string GetPackageCurrentVersion(string name)
+        {
+            if (m_CurrentRegisteredPackages.TryGetValue(name, out var info))
+            {
+                return info.version;
+            }
+
+            return "";
+        }
+
         private static void ResetPackageLastInfo(string name, string version)
         {
             if (m_PackageInfoAsset == null)
             {
-                Debug.LogError($"PackageInfoAsset == null");
-                return;
+                var result = LoadAsset();
+                if (!result)
+                {
+                    Debug.LogError($"PackageInfoAsset == null");
+                    return;
+                }
             }
 
             m_PackageInfoAsset.AllLastPackageInfoDic[name] = version;
@@ -211,7 +275,7 @@ namespace ET.PackageManager.Editor
             }
 
             m_PackageInfoAsset.LastUpdateTime = currentTime;
-            EditorUtility.DisplayProgressBar("同步包信息", $"请求中...", 0);
+            EditorUtility.DisplayProgressBar("同步信息", $"请求中...", 0);
             m_RequestAllCallback     =  callback;
             m_Requesting             =  true;
             m_ListRequest            =  Client.List();
@@ -252,9 +316,6 @@ namespace ET.PackageManager.Editor
             EditorUtility.ClearProgressBar();
         }
 
-        private static SearchRequest  m_TargetRequest;
-        private static Action<string> m_RequestTargetCallback;
-
         public static void CheckUpdateTarget(string name, Action<string> callback)
         {
             if (string.IsNullOrEmpty(name))
@@ -276,59 +337,22 @@ namespace ET.PackageManager.Editor
                 callback?.Invoke(version);
                 return;
             }
+            
+            EditorUtility.DisplayProgressBar("同步信息", $"{name} 请求中...", 0);
 
-            if (m_Requesting)
+            new PackageRequestTarget(name, (packageInfo) =>
             {
-                //Debug.Log($"请求中请稍等...请勿频繁请求");
-                callback?.Invoke("");
-                return;
-            }
-
-            EditorUtility.DisplayProgressBar("同步包信息", $"{name} 请求中...", 0);
-
-            m_RequestTargetCallback = callback;
-
-            m_Requesting = true;
-
-            m_TargetRequest = Client.Search(name);
-
-            EditorApplication.update += CheckUpdateTargetProgress;
-        }
-
-        private static void CheckUpdateTargetProgress()
-        {
-            if (!m_TargetRequest.IsCompleted) return;
-
-            if (m_TargetRequest.Status == StatusCode.Success)
-            {
-                if (m_TargetRequest.Result is { Length: >= 1 })
+                var lastVersion = packageInfo.version;
+                if (packageInfo.versions != null)
                 {
-                    var packageInfo = m_TargetRequest.Result[0];
-                    var lastVersion = packageInfo.version;
-                    if (packageInfo.versions != null)
-                    {
-                        lastVersion = packageInfo.versions.latest;
-                    }
-
-                    ResetPackageLastInfo(packageInfo.name, lastVersion);
-                    UpdateAllLastPackageInfo();
-                    m_RequestTargetCallback?.Invoke(lastVersion);
+                    lastVersion = packageInfo.versions.latest;
                 }
-                else
-                {
-                    m_RequestTargetCallback?.Invoke("");
-                }
-            }
-            else
-            {
-                Debug.LogError(m_TargetRequest.Error.message);
-                m_RequestTargetCallback?.Invoke("");
-            }
 
-            EditorApplication.update -= CheckUpdateTargetProgress;
-            m_Requesting             =  false;
-            m_RequestTargetCallback  =  null;
-            EditorUtility.ClearProgressBar();
+                ResetPackageLastInfo(packageInfo.name, lastVersion);
+                UpdateAllLastPackageInfo();
+                callback?.Invoke(lastVersion);
+                EditorUtility.ClearProgressBar();
+            });
         }
     }
 }

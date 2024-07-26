@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if ODIN_INSPECTOR
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -6,6 +7,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+using UnityEditor.PackageManager.Requests;
+using UnityEditor.PackageManager;
 
 namespace ET.PackageManager.Editor
 {
@@ -16,6 +19,13 @@ namespace ET.PackageManager.Editor
         public const string ETPackageHubAssetPath = PackageHelper.ETPackageAssetsFolderPath + "/PackageHubAsset.asset";
 
         private static PackageHubAsset m_PackageHubAsset;
+        public static  PackageHubAsset PackageHubAsset => m_PackageHubAsset;
+
+        public static void SaveAsset()
+        {
+            if (m_PackageHubAsset == null) return;
+            EditorUtility.SetDirty(m_PackageHubAsset);
+        }
 
         private static bool LoadAsset()
         {
@@ -87,15 +97,15 @@ namespace ET.PackageManager.Editor
 
         private static async Task RefreshPackages()
         {
-            m_PackageHubAsset.PackageDict.Clear();
-            int page      = 0;
-            int lastCount = 0;
+            var tempAllPackageData = new Dictionary<string, PackageHubData>();
+            int page               = 0;
+            int lastCount          = 0;
             while (true)
             {
                 page++;
                 var pageUrl = $"{PackageURL}{page}";
 
-                EditorUtility.DisplayProgressBar("同步信息", $"第{page}页", 0);
+                EditorUtility.DisplayProgressBar("同步信息", $"第{page}页...", 0);
 
                 var content = await GetHtmlContent(pageUrl);
                 if (string.IsNullOrEmpty(content))
@@ -103,21 +113,55 @@ namespace ET.PackageManager.Editor
                     break;
                 }
 
-                if (!ExtractPackages(content, ref m_PackageHubAsset.PackageDict))
+                if (!ExtractPackages(content, ref tempAllPackageData))
                 {
                     break;
                 }
 
                 //Debug.LogError($" 第{page}页 提取到:{packagesDic.Count - lastCount} 数据");
-                lastCount = m_PackageHubAsset.PackageDict.Count;
+                lastCount = tempAllPackageData.Count;
             }
 
+            SyncAllPackageData(tempAllPackageData);
+
             //Debug.LogError($"总数据: {packagesDic.Count}");
-            EditorUtility.SetDirty(m_PackageHubAsset);
             EditorUtility.ClearProgressBar();
             m_CheckUpdateCallback?.Invoke(true);
             m_CheckUpdateCallback = null;
             m_Requesting          = false;
+        }
+
+        private static void SyncAllPackageData(Dictionary<string, PackageHubData> datas)
+        {
+            var removeData = new HashSet<string>();
+            foreach (var packageData in m_PackageHubAsset.AllPackageData.Values)
+            {
+                var name = packageData.PackageName;
+                if (!datas.ContainsKey(name))
+                {
+                    removeData.Add(name);
+                }
+            }
+
+            foreach (var name in removeData)
+            {
+                m_PackageHubAsset.AllPackageData.Remove(name);
+            }
+
+            foreach (var packageData in datas.Values)
+            {
+                var name = packageData.PackageName;
+                if (m_PackageHubAsset.AllPackageData.TryGetValue(name, out var data))
+                {
+                    data.DownloadValue = packageData.DownloadValue;
+                }
+                else
+                {
+                    m_PackageHubAsset.AllPackageData[name] = packageData;
+                }
+            }
+
+            SaveAsset();
         }
 
         private static async Task<string> GetHtmlContent(string url)
@@ -169,3 +213,4 @@ namespace ET.PackageManager.Editor
         }
     }
 }
+#endif

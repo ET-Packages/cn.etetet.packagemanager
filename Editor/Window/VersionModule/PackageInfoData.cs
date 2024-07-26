@@ -175,7 +175,7 @@ namespace ET.PackageManager.Editor
 
         public bool ShowIfReqVersion()
         {
-            return !IsBan &&IsETPackage && string.IsNullOrEmpty(LastVersion);
+            return !IsBan && IsETPackage && string.IsNullOrEmpty(LastVersion);
         }
 
         [Button("禁")]

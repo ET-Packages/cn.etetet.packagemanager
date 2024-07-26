@@ -140,19 +140,19 @@ namespace ET.PackageManager.Editor
             CheckUpdateAllEnd = false;
             RequestAllResult  = false;
             PackageHelper.CheckUpdateAll((result) =>
-                                         {
-                                             CheckUpdateAllEnd = true;
-                                             RequestAllResult  = result;
-                                             if (!result) return;
-                                             Search              = SearchPrefs.Value;
-                                             FilterType          = FilterTypePrefs.Value;
-                                             LastFilterType      = FilterType;
-                                             SyncDependency      = SyncDependencyPrefs.Value;
-                                             FilterOperationType = FilterOperationTypePrefs.Value;
-                                             LoadAllPackageInfoData();
-                                             LoadFilterPackageInfoData();
-                                             Inst = this;
-                                         });
+            {
+                CheckUpdateAllEnd = true;
+                RequestAllResult  = result;
+                if (!result) return;
+                Search              = SearchPrefs.Value;
+                FilterType          = FilterTypePrefs.Value;
+                LastFilterType      = FilterType;
+                SyncDependency      = SyncDependencyPrefs.Value;
+                FilterOperationType = FilterOperationTypePrefs.Value;
+                LoadAllPackageInfoData();
+                LoadFilterPackageInfoData();
+                Inst = this;
+            });
         }
 
         public override void OnDestroy()
@@ -179,7 +179,7 @@ namespace ET.PackageManager.Editor
             for (int i = 0; i < count; i++)
             {
                 var packageInfo = m_FilterPackageInfoDataList[i];
-                EditorUtility.DisplayProgressBar("同步包信息", $"更新{packageInfo.Name}", i * 1f / count);
+                EditorUtility.DisplayProgressBar("同步信息", $"更新{packageInfo.Name}", i * 1f / count);
                 await ChangePackageInfo(packageInfo);
             }
 
@@ -375,7 +375,7 @@ namespace ET.PackageManager.Editor
         private void LoadAllPackageInfoData()
         {
             //初始化
-            foreach (var packageInfo in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
+            foreach (var packageInfo in PackageHelper.CurrentRegisteredPackages.Values)
             {
                 var name         = packageInfo.name;
                 var version      = packageInfo.version;
@@ -386,12 +386,12 @@ namespace ET.PackageManager.Editor
                 foreach (var dependency in dependencies)
                 {
                     infoData.Dependencies.Add(new DependencyInfo()
-                                              {
-                                                  SelfName         = name,
-                                                  Name             = dependency.name,
-                                                  Version          = dependency.version,
-                                                  DependenciesSelf = false
-                                              });
+                    {
+                        SelfName         = name,
+                        Name             = dependency.name,
+                        Version          = dependency.version,
+                        DependenciesSelf = false
+                    });
                 }
 
                 m_AllPackageInfoDataList.Add(name, infoData);
@@ -423,12 +423,12 @@ namespace ET.PackageManager.Editor
                     }
 
                     target.DependenciesSelf.Add(new DependencyInfo()
-                                                {
-                                                    SelfName         = dependency.Name,
-                                                    Name             = name,
-                                                    Version          = dependency.Version,
-                                                    DependenciesSelf = true,
-                                                });
+                    {
+                        SelfName         = dependency.Name,
+                        Name             = name,
+                        Version          = dependency.Version,
+                        DependenciesSelf = true,
+                    });
                 }
             }
         }
