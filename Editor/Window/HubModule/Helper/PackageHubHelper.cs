@@ -9,113 +9,95 @@ namespace ET
 {
     public static class PackageHubHelper
     {
+        private const string PackageURL = "https://github.com/orgs/ET-Packages/packages?page=";
+
         public static async Task Init()
         {
-            string url = "https://github.com/orgs/ET-Packages/repositories?type=all";
-
-            int page = 1;
-
-            int allCount = 0;
-
-            var packages = new HashSet<string>();
-
-            var whileCount = 0;
-
+            var packagesDic = new Dictionary<string, PackageInfo>();
+            int page        = 0;
+            int lastCount   = 0;
             while (true)
             {
-                var pageUrl = $"{url}&page={page}";
+                page++;
+                var pageUrl = $"{PackageURL}{page}";
 
                 var content = await GetHtmlContent(pageUrl);
-
-                if (page == 1)
-                {
-                    allCount = GetAllCount(content);
-                    Debug.LogError($"总数 {allCount}");
-                }
-
-                GetCurrentPackages(content, ref packages);
-
-                Debug.LogError($"第 {page} 页  获取到: {packages.Count}");
-
-                if (allCount == 0)
+                if (string.IsNullOrEmpty(content))
                 {
                     break;
                 }
 
-                if (packages.Count >= allCount)
+                if (!ExtractPackages(content, ref packagesDic))
                 {
                     break;
                 }
 
-                if (whileCount >= 100)
-                {
-                    break;
-                }
-
-                page++;
-                whileCount++;
+                Debug.LogError($" 第{page}页 提取到:{packagesDic.Count - lastCount} 数据");
+                lastCount = packagesDic.Count;
             }
 
-            Debug.LogError($"长度 {packages.Count}");
+            Debug.LogError($"总数据: {packagesDic.Count}");
 
-            foreach (var value in packages)
+            foreach (var info in packagesDic.Values)
             {
-                Debug.LogError(value);
+                Debug.LogError($"{info.PackageName} {info.DownloadValue}");
             }
         }
 
-        static async Task<string> GetHtmlContent(string url)
+        private static async Task<string> GetHtmlContent(string url)
         {
-            string html = "";
-            using (var client = new HttpClient())
+            string    html   = "";
+            using var client = new HttpClient();
+            try
             {
-                try
-                {
-                    HttpResponseMessage response = await client.GetAsync(url);
-                    response.EnsureSuccessStatusCode();
-                    html = await response.Content.ReadAsStringAsync();
-                }
-                catch (HttpRequestException e)
-                {
-                    Debug.LogError("\n异常: " + e.Message);
-                }
+                var response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                html = await response.Content.ReadAsStringAsync();
+            }
+            catch (HttpRequestException e)
+            {
+                Debug.LogError("异常: " + e.Message);
             }
 
             return html;
         }
 
-        static int GetAllCount(string content)
+        private static bool ExtractPackages(string html, ref Dictionary<string, PackageInfo> dic)
         {
-            string pattern = @"ET-Packages has (\d+) repositories";
+            string packagePattern = @"href=""/ET-Packages/cn.etetet.(\w+)""";
 
-            Match match = Regex.Match(content, pattern);
+            string downloadPattern = @"</svg>\s*?(\d+)\s*?</span>";
 
-            if (match.Success)
+            Regex           packageRegex    = new Regex(packagePattern);
+            Regex           downloadRegex   = new Regex(downloadPattern);
+            MatchCollection packageMatches  = packageRegex.Matches(html);
+            MatchCollection downloadMatches = downloadRegex.Matches(html);
+
+            if (packageMatches.Count != downloadMatches.Count || packageMatches.Count <= 0 || downloadMatches.Count <= 0)
             {
-                int repositoryCount = int.Parse(match.Groups[1].Value);
-                return repositoryCount;
-            }
-            else
-            {
-                Debug.LogError("没有找到总数");
+                return false;
             }
 
-            return 0;
+            for (int i = 0; i < packageMatches.Count; i++)
+            {
+                string packageName      = packageMatches[i].Groups[1].Value;
+                string downloadCountStr = downloadMatches[i].Groups[1].Value;
+                int    downloadCount    = int.Parse(downloadCountStr);
+
+                dic[packageName] = new()
+                {
+                    PackageName   = packageName,
+                    DownloadValue = downloadCount
+                };
+            }
+
+            return true;
         }
 
-        static void GetCurrentPackages(string content, ref HashSet<string> repositoryNames)
+        public class PackageInfo
         {
-            string pattern = @"""name"":\s*""cn\.etetet\.(\w+)""";
-
-            MatchCollection matches = Regex.Matches(content, pattern);
-
-            foreach (Match match in matches)
-            {
-                if (match.Groups.Count > 1)
-                {
-                    repositoryNames.Add(match.Groups[1].Value);
-                }
-            }
+            public string PackageName   { get; set; }
+            public int    DownloadValue { get; set; }
         }
     }
 }
