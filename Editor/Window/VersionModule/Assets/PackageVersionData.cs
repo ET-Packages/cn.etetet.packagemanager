@@ -8,7 +8,7 @@ using UnityEngine;
 namespace ET.PackageManager.Editor
 {
     [HideReferenceObjectPicker]
-    public class PackageInfoData
+    public class PackageVersionData
     {
         [ReadOnly]
         [HideLabel]
@@ -154,7 +154,7 @@ namespace ET.PackageManager.Editor
         [VerticalGroup("信息")]
         public void ResetVersion()
         {
-            var packageInfo = ETPackageVersionModule.Inst.GetSourcePackageInfoData(Name);
+            var packageInfo = PackageVersionHelper.GetPackageVersionData(Name);
             if (packageInfo == null)
             {
                 return;
@@ -286,7 +286,7 @@ namespace ET.PackageManager.Editor
 
         public string LastVersion { get; private set; }
 
-        public PackageInfoData(string name, string version)
+        public PackageVersionData(string name, string version)
         {
             Name        = name;
             Version     = version;
@@ -322,9 +322,9 @@ namespace ET.PackageManager.Editor
 
     public static class PackageInfoDataExtension
     {
-        public static PackageInfoData Copy(this PackageInfoData data)
+        public static PackageVersionData Copy(this PackageVersionData data)
         {
-            var copyData = new PackageInfoData(data.Name, data.Version)
+            var copyData = new PackageVersionData(data.Name, data.Version)
             {
                 Dependencies     = new(),
                 DependenciesSelf = new()

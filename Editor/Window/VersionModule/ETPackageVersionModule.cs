@@ -196,7 +196,7 @@ namespace ET.PackageManager.Editor
             //EditorUtility.ClearProgressBar();
         }
 
-        private async Task ChangePackageInfo(PackageInfoData packageInfoData)
+        private async Task ChangePackageInfo(PackageVersionData packageInfoData)
         {
             var assetPath   = $"Packages/{packageInfoData.Name}/package.json";
             var packagePath = $"{Application.dataPath}/../{assetPath}";
@@ -231,7 +231,7 @@ namespace ET.PackageManager.Editor
             }
         }
 
-        private JObject NewDependencies(PackageInfoData packageInfoData)
+        private JObject NewDependencies(PackageVersionData packageInfoData)
         {
             JObject newDependencies = new JObject();
             foreach (var dependency in packageInfoData.Dependencies)
@@ -248,22 +248,13 @@ namespace ET.PackageManager.Editor
         [HideLabel]
         [ShowInInspector]
         [ShowIf("CheckUpdateAllEnd")]
-        private List<PackageInfoData> m_FilterPackageInfoDataList = new();
+        private List<PackageVersionData> m_FilterPackageInfoDataList = new();
 
-        private readonly Dictionary<string, PackageInfoData> m_FilterPackageInfoDataDic = new();
+        private readonly Dictionary<string, PackageVersionData> m_FilterPackageInfoDataDic = new();
 
-        public PackageInfoData GetPackageInfoData(string packageName)
+        public PackageVersionData GetPackageInfoData(string packageName)
         {
-            m_FilterPackageInfoDataDic.TryGetValue(packageName, out PackageInfoData packageInfoData);
-            return packageInfoData;
-        }
-
-        //所有包原始数据
-        private readonly Dictionary<string, PackageInfoData> m_AllPackageInfoDataList = new();
-
-        public PackageInfoData GetSourcePackageInfoData(string packageName)
-        {
-            m_AllPackageInfoDataList.TryGetValue(packageName, out PackageInfoData packageInfoData);
+            m_FilterPackageInfoDataDic.TryGetValue(packageName, out PackageVersionData packageInfoData);
             return packageInfoData;
         }
 
@@ -272,7 +263,7 @@ namespace ET.PackageManager.Editor
             m_FilterPackageInfoDataList.Clear();
             m_FilterPackageInfoDataDic.Clear();
             var packagesFilterTypeValues = Enum.GetValues(typeof(EPackagesFilterType));
-            foreach (var data in m_AllPackageInfoDataList)
+            foreach (var data in PackageVersionHelper.PackageVersionAsset.AllPackageVersionData)
             {
                 var name = data.Key;
 
@@ -374,61 +365,27 @@ namespace ET.PackageManager.Editor
 
         private void LoadAllPackageInfoData()
         {
-            //初始化
-            foreach (var packageInfo in PackageHelper.CurrentRegisteredPackages.Values)
-            {
-                var name         = packageInfo.name;
-                var version      = packageInfo.version;
-                var dependencies = packageInfo.dependencies;
+            var allPackageInfoDataList = PackageVersionHelper.PackageVersionAsset.AllPackageVersionData;
 
-                var infoData = new PackageInfoData(name, version);
-                infoData.Dependencies = new();
-                foreach (var dependency in dependencies)
-                {
-                    infoData.Dependencies.Add(new DependencyInfo()
-                    {
-                        SelfName         = name,
-                        Name             = dependency.name,
-                        Version          = dependency.version,
-                        DependenciesSelf = false
-                    });
-                }
-
-                m_AllPackageInfoDataList.Add(name, infoData);
-            }
-
-            //处理依赖关系
-            foreach (var data in m_AllPackageInfoDataList.Values)
+            //处理依赖检查
+            foreach (var data in allPackageInfoDataList.Values)
             {
                 var name         = data.Name;
                 var dependencies = data.Dependencies;
                 foreach (var dependency in dependencies)
                 {
-                    if (!m_AllPackageInfoDataList.ContainsKey(dependency.Name))
+                    if (!allPackageInfoDataList.ContainsKey(dependency.Name))
                     {
                         Debug.LogError($"{name}依赖包{dependency.Name}不存在");
                         continue;
                     }
 
-                    var target = m_AllPackageInfoDataList[dependency.Name];
+                    var target = allPackageInfoDataList[dependency.Name];
 
                     if (target.IsETPackage && !CheckVersion(dependency, target))
                     {
                         Debug.LogError($"[{name}]依赖包[{dependency.Name}] 版本不匹配，依赖版本[{dependency.Version}]，当前版本[{target.Version}]");
                     }
-
-                    if (target.DependenciesSelf == null)
-                    {
-                        target.DependenciesSelf = new();
-                    }
-
-                    target.DependenciesSelf.Add(new DependencyInfo()
-                    {
-                        SelfName         = dependency.Name,
-                        Name             = name,
-                        Version          = dependency.Version,
-                        DependenciesSelf = true,
-                    });
                 }
             }
         }
@@ -457,7 +414,7 @@ namespace ET.PackageManager.Editor
             return m_VersionValueDict[version];
         }
 
-        private bool CheckVersion(DependencyInfo dependencyInfo, PackageInfoData targetData)
+        private bool CheckVersion(DependencyInfo dependencyInfo, PackageVersionData targetData)
         {
             var dependencyVersion  = dependencyInfo.Version;
             var versionValue       = GetVersionValue(dependencyVersion);

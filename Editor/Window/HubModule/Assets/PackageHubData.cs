@@ -97,25 +97,28 @@ namespace ET.PackageManager.Editor
         {
             UnityTipsHelper.CallBackOk($"确定移除 {PackageName}", () =>
             {
-                UnityTipsHelper.CallBackOk($"请到 Package Manager 中手动移除 {PackageName}",
+                /*
+                 UnityTipsHelper.CallBackOk($"请到 Package Manager 中手动移除 {PackageName}",
                     () =>
                     {
                         PackageAuthor = null;
                         EditorApplication.ExecuteMenuItem("Window/Package Manager");
                         ETPackageAutoTool.CloseWindowRefresh();
                     });
+                */
 
-                /* 测试无法移除 所以改其他方法
+                //测试无法移除 所以改其他方法
                 EditorUtility.DisplayProgressBar("同步信息", $"移除 {PackageName}...", 0);
                 OperationState = true;
                 new PackageRequestRemove(PackageName, (result) =>
                 {
-                    m_Install = false;
-                    EditorUtility.ClearProgressBar();
                     OperationState = false;
+                    EditorUtility.ClearProgressBar();
+                    if (!result) return;
+                    m_Install = false;
                     ETPackageAutoTool.CloseWindowRefresh();
                 });
-                */
+                
             });
         }
 

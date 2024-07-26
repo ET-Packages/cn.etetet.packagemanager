@@ -74,7 +74,7 @@ namespace ET.PackageManager.Editor
                 return false;
             }
 
-            var packageInfo = ETPackageVersionModule.Inst.GetPackageInfoData(Name);
+            var packageInfo = ETPackageVersionModule.Inst?.GetPackageInfoData(Name);
             if (packageInfo == null)
             {
                 return false;
@@ -131,7 +131,7 @@ namespace ET.PackageManager.Editor
                 return false;
             }
 
-            var packageInfo = ETPackageVersionModule.Inst.GetPackageInfoData(SelfName);
+            var packageInfo = ETPackageVersionModule.Inst?.GetPackageInfoData(SelfName);
             if (packageInfo == null)
             {
                 return false;

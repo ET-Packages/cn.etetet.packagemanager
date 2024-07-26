@@ -27,6 +27,38 @@ namespace ET.PackageManager.Editor
             EditorApplication.update += UpdateRequest;
         }
 
+        private bool CheckRemove()
+        {
+            var packagePath = Application.dataPath.Replace("Assets", "Packages") + "/" + m_Name;
+
+            if (!System.IO.Directory.Exists(packagePath))
+            {
+                UnityTipsHelper.Show($"{packagePath} 不存在此包 无法移除");
+                return false;
+            }
+
+            //查询依赖 他被其他包依赖时 无法移除必须先移除依赖包
+            
+            
+            try
+            {
+                System.IO.Directory.Delete(packagePath, true);
+
+                if (System.IO.Directory.Exists(packagePath))
+                {
+                    Debug.LogError("删除失败 文件还存在");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                return false;
+            }
+        }
+
         private void UpdateRequest()
         {
             if (!m_Request.IsCompleted) return;
