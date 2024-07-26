@@ -29,6 +29,7 @@ namespace ET.PackageManager.Editor
             }
             foreach (var package in PackageHubHelper.PackageHubAsset.AllPackageData.Values)
             {
+                package.InitRequestInfo();
                 AllPackages.Add(package);
             }
         }

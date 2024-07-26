@@ -8,6 +8,7 @@ namespace ET.PackageManager.Editor
 {
     public class PackageRequestAdd
     {
+        private string                                         m_Name;
         private AddRequest                                     m_Request;
         private Action<UnityEditor.PackageManager.PackageInfo> m_RequestCallback;
 
@@ -20,37 +21,36 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
-            this.m_RequestCallback = callback;
-
-            this.m_Request = Client.Add(name);
-
+            m_Name                   =  name;
+            m_RequestCallback        =  callback;
+            m_Request                =  Client.Add(name);
             EditorApplication.update += UpdateRequest;
         }
 
         private void UpdateRequest()
         {
-            if (!this.m_Request.IsCompleted) return;
+            if (!m_Request.IsCompleted) return;
 
-            if (this.m_Request.Status == StatusCode.Success)
+            if (m_Request.Status == StatusCode.Success)
             {
-                if (this.m_Request.Result != null)
+                if (m_Request.Result != null)
                 {
-                    var packageInfo = this.m_Request.Result;
-                    this.m_RequestCallback?.Invoke(packageInfo);
+                    var packageInfo = m_Request.Result;
+                    m_RequestCallback?.Invoke(packageInfo);
                 }
                 else
                 {
-                    this.m_RequestCallback?.Invoke(null);
+                    m_RequestCallback?.Invoke(null);
                 }
             }
             else
             {
-                Debug.LogError(this.m_Request.Error.message);
-                this.m_RequestCallback?.Invoke(null);
+                Debug.LogError($"添加 请求失败:{m_Name} 请刷新后重试!\n{m_Request.Error.message}");
+                m_RequestCallback?.Invoke(null);
             }
 
             EditorApplication.update -= UpdateRequest;
-            this.m_RequestCallback   =  null;
+            m_RequestCallback        =  null;
         }
     }
 }

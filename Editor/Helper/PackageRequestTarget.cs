@@ -40,7 +40,7 @@ namespace ET.PackageManager.Editor
                 }
                 else
                 {
-                    Debug.LogError($"{m_Name} Result >= 1");
+                    Debug.LogError($"请求失败:{m_Name} Result >= 1");
                     m_RequestTargetCallback?.Invoke(null);
                 }
             }

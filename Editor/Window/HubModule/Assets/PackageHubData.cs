@@ -74,50 +74,84 @@ namespace ET.PackageManager.Editor
         [LabelText("类别")]
         public string PackageCategory;
 
-        [TableColumnWidth(80, Resizable = false)]
+        [TableColumnWidth(60, Resizable = false)]
         [VerticalGroup("操作")]
-        [Button(60, Icon = SdfIconType.ArrowRepeat, IconAlignment = IconAlignment.LeftOfText)]
-        [ShowIf("ShowIfUpdateData")]
+        [Button(40, Icon = SdfIconType.ArrowRepeat, IconAlignment = IconAlignment.LeftOfText)]
+        [HideIf("OperationState")]
         private void UpdateData()
         {
-            this.OperationState = true;
-            new PackageRequestTarget(this.PackageName, (info) =>
+            OperationState = true;
+            new PackageRequestTarget(PackageName, (info) =>
             {
-                this.OperationState = false;
-                this.RefreshInfo(info);
+                OperationState = false;
+                RefreshInfo(info);
             });
         }
 
-        private bool ShowIfUpdateData()
+        [TableColumnWidth(60, Resizable = false)]
+        [VerticalGroup("操作")]
+        [Button(40, Icon = SdfIconType.X, IconAlignment = IconAlignment.LeftOfText)]
+        [GUIColor(1f, 0.5f, 0.5f)]
+        [ShowIf("ShowIfRemovePackage")]
+        private void RemovePackage()
         {
-            return Install && !this.OperationState;
+            UnityTipsHelper.CallBackOk($"确定移除 {PackageName}", () =>
+            {
+                UnityTipsHelper.CallBackOk($"请到 Package Manager 中手动移除 {PackageName}",
+                    () =>
+                    {
+                        PackageAuthor = null;
+                        EditorApplication.ExecuteMenuItem("Window/Package Manager");
+                    });
+
+                /* 测试无法移除 所以改其他方法
+                EditorUtility.DisplayProgressBar("同步信息", $"移除 {PackageName}...", 0);
+                OperationState = true;
+                new PackageRequestRemove(PackageName, (result) =>
+                {
+                    m_Install = false;
+                    EditorUtility.ClearProgressBar();
+                    OperationState = false;
+                    ETPackageAutoTool.CloseWindowRefresh();
+                });
+                */
+            });
         }
 
-        [TableColumnWidth(80, Resizable = false)]
+        private bool ShowIfRemovePackage()
+        {
+            return Install && !OperationState;
+        }
+
+        [TableColumnWidth(60, Resizable = false)]
         [VerticalGroup("操作")]
-        [Button(60, Icon = SdfIconType.ArrowDownCircleFill, IconAlignment = IconAlignment.LeftOfText)]
+        [Button(40, Icon = SdfIconType.ArrowDownShort, IconAlignment = IconAlignment.LeftOfText)]
         [GUIColor(0.4f, 0.8f, 1)]
         [HideIf("HideIfInstallPackage")]
         private void InstallPackage()
         {
-            EditorUtility.DisplayProgressBar("同步信息", $"安装 {this.PackageName}...", 0);
-            this.OperationState = true;
-            new PackageRequestAdd(this.PackageName, (info) =>
+            UnityTipsHelper.CallBackOk($"确定安装 {PackageName}", () =>
             {
-                if (info != null)
+                EditorUtility.DisplayProgressBar("同步信息", $"安装 {PackageName}...", 0);
+                OperationState = true;
+                new PackageRequestAdd(PackageName, (info) =>
                 {
-                    this.PackageCurrentVersion = info.version;
-                }
+                    if (info != null)
+                    {
+                        m_Install             = true;
+                        PackageCurrentVersion = info.version;
+                    }
 
-                EditorUtility.ClearProgressBar();
-                this.OperationState = false;
-                ETPackageAutoTool.CloseWindowRefresh();
+                    EditorUtility.ClearProgressBar();
+                    OperationState = false;
+                    ETPackageAutoTool.CloseWindowRefresh();
+                });
             });
         }
 
         private bool HideIfInstallPackage()
         {
-            return Install || this.OperationState;
+            return Install || OperationState;
         }
 
         [NonSerialized]
@@ -126,7 +160,7 @@ namespace ET.PackageManager.Editor
         private bool m_Install;
 
         [HideInInspector]
-        public bool Install => this.m_Install;
+        public bool Install => m_Install;
 
         public bool OperationState { get; set; }
 
@@ -141,13 +175,21 @@ namespace ET.PackageManager.Editor
         public void RefreshInfo(UnityEditor.PackageManager.PackageInfo info)
         {
             if (info == null) return;
-            this.PackageAuthor      = info.author.name;
-            this.PackageDescription = info.description;
-            this.PackageLastVersion = info.version;
-            var currentVersion = PackageHelper.GetPackageCurrentVersion(this.PackageName);
-            this.m_Install             = !string.IsNullOrEmpty(currentVersion);
-            this.PackageCurrentVersion = this.m_Install ? currentVersion : "未安装";
-            this.PackageCategory       = info.category;
+            PackageAuthor      = info.author.name;
+            PackageDescription = info.description;
+            PackageLastVersion = info.version;
+            var currentVersion = PackageHelper.GetPackageCurrentVersion(PackageName);
+            m_Install             = !string.IsNullOrEmpty(currentVersion);
+            PackageCurrentVersion = m_Install ? currentVersion : "未安装";
+            PackageCategory       = info.category;
+        }
+
+        public void InitRequestInfo()
+        {
+            if (string.IsNullOrEmpty(PackageAuthor))
+            {
+                UpdateData();
+            }
         }
     }
 }
