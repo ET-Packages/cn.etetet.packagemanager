@@ -11,17 +11,17 @@ namespace ET.PackageManager.Editor
 {
     public static class PackageHelper
     {
-        public const string YIUIPackagePath = "Packages/cn.etetet.packagemanager";
+        public const string ETPackagePath = "Packages/cn.etetet.packagemanager";
 
-        public const string YIUIAssetFolderPath = YIUIPackagePath + "/Editor/Assets";
+        public const string ETPackageAssetsFolderPath = ETPackagePath + "/Editor/Assets";
 
-        public const string YIUIAssetPath = YIUIAssetFolderPath + "/PackageInfoAsset.asset";
+        public const string ETPackageInfoAssetPath = ETPackageAssetsFolderPath + "/PackageInfoAsset.asset";
 
         private static PackageInfoAsset m_PackageInfoAsset;
 
         private static bool LoadAsset()
         {
-            m_PackageInfoAsset = AssetDatabase.LoadAssetAtPath<PackageInfoAsset>(YIUIAssetPath);
+            m_PackageInfoAsset = AssetDatabase.LoadAssetAtPath<PackageInfoAsset>(ETPackageInfoAssetPath);
 
             if (m_PackageInfoAsset == null)
             {
@@ -43,11 +43,11 @@ namespace ET.PackageManager.Editor
         {
             m_PackageInfoAsset = ScriptableObject.CreateInstance<PackageInfoAsset>();
 
-            var assetFolder = $"{Application.dataPath}/../{YIUIAssetFolderPath}";
+            var assetFolder = $"{Application.dataPath}/../{ETPackageAssetsFolderPath}";
             if (!Directory.Exists(assetFolder))
                 Directory.CreateDirectory(assetFolder);
 
-            AssetDatabase.CreateAsset(m_PackageInfoAsset, YIUIAssetPath);
+            AssetDatabase.CreateAsset(m_PackageInfoAsset, ETPackageInfoAssetPath);
         }
 
         public static bool IsBanPackage(string name)
