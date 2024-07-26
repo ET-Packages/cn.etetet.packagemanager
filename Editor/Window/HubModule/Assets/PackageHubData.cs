@@ -74,6 +74,7 @@ namespace ET.PackageManager.Editor
         [LabelText("类别")]
         public string PackageCategory;
 
+        [HideLabel]
         [TableColumnWidth(60, Resizable = false)]
         [VerticalGroup("操作")]
         [Button(40, Icon = SdfIconType.ArrowRepeat, IconAlignment = IconAlignment.LeftOfText)]
@@ -88,10 +89,11 @@ namespace ET.PackageManager.Editor
             });
         }
 
+        [HideLabel]
+        [GUIColor("GetRemoveColor")]
         [TableColumnWidth(60, Resizable = false)]
         [VerticalGroup("操作")]
         [Button(40, Icon = SdfIconType.X, IconAlignment = IconAlignment.LeftOfText)]
-        [GUIColor(1f, 0.5f, 0.5f)]
         [ShowIf("ShowIfRemovePackage")]
         private void RemovePackage()
         {
@@ -118,7 +120,6 @@ namespace ET.PackageManager.Editor
                     m_Install = false;
                     ETPackageAutoTool.CloseWindowRefresh();
                 });
-                
             });
         }
 
@@ -127,6 +128,17 @@ namespace ET.PackageManager.Editor
             return Install && !OperationState;
         }
 
+        [NonSerialized]
+        [OdinSerialize]
+        [HideInInspector]
+        private bool m_CanRemove;
+
+        private Color GetRemoveColor()
+        {
+            return m_CanRemove ? Color.HSVToRGB(0f, 0.5f, 1) : Color.HSVToRGB(0f, 0f, 0.5f);
+        }
+
+        [HideLabel]
         [TableColumnWidth(60, Resizable = false)]
         [VerticalGroup("操作")]
         [Button(40, Icon = SdfIconType.ArrowDownShort, IconAlignment = IconAlignment.LeftOfText)]
@@ -174,7 +186,7 @@ namespace ET.PackageManager.Editor
         [ShowInInspector]
         [TextArea]
         [DisplayAsString(false, 15, TextAlignment.Center, true)]
-        private static string m_CheckUpdateAllReqing = "操作中...";
+        private static string m_CheckUpdateAllReqing = "操作中";
 
         public void RefreshInfo(UnityEditor.PackageManager.PackageInfo info)
         {
@@ -186,6 +198,7 @@ namespace ET.PackageManager.Editor
             m_Install             = !string.IsNullOrEmpty(currentVersion);
             PackageCurrentVersion = m_Install ? currentVersion : "未安装";
             PackageCategory       = info.category;
+            m_CanRemove           = PackageHubHelper.CheckRemove(PackageName);
         }
 
         public void InitRequestInfo()

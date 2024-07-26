@@ -21,7 +21,14 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
-            m_Name                   =  name;
+            m_Name = name;
+
+            if (!CheckRemove())
+            {
+                callback?.Invoke(false);
+                return;
+            }
+
             m_RequestCallback        =  callback;
             m_Request                =  Client.Remove(name);
             EditorApplication.update += UpdateRequest;
@@ -29,17 +36,13 @@ namespace ET.PackageManager.Editor
 
         private bool CheckRemove()
         {
-            var packagePath = Application.dataPath.Replace("Assets", "Packages") + "/" + m_Name;
-
-            if (!System.IO.Directory.Exists(packagePath))
+            if (!PackageHubHelper.CheckRemove(m_Name, true))
             {
-                UnityTipsHelper.Show($"{packagePath} 不存在此包 无法移除");
                 return false;
             }
 
-            //查询依赖 他被其他包依赖时 无法移除必须先移除依赖包
-            
-            
+            var packagePath = Application.dataPath.Replace("Assets", "Packages") + "/" + m_Name;
+
             try
             {
                 System.IO.Directory.Delete(packagePath, true);

@@ -37,6 +37,11 @@ namespace ET.PackageManager.Editor
             }
         }
 
+        public static PackageHubData GetPackageHubData(string packageName)
+        {
+            return PackageHubAsset.AllPackageData.GetValueOrDefault(packageName);
+        }
+
         public static void SaveAsset()
         {
             if (m_PackageHubAsset == null) return;
@@ -219,10 +224,53 @@ namespace ET.PackageManager.Editor
                 int    downloadCount    = int.Parse(downloadCountStr);
 
                 dic[packageName] = new()
-                                   {
-                                       PackageName   = packageName,
-                                       DownloadValue = downloadCount
-                                   };
+                {
+                    PackageName   = packageName,
+                    DownloadValue = downloadCount
+                };
+            }
+
+            return true;
+        }
+
+        public static bool CheckRemove(string packageName, bool showLog = false)
+        {
+            var packagePath = Application.dataPath.Replace("Assets", "Packages") + "/" + packageName;
+
+            if (!System.IO.Directory.Exists(packagePath))
+            {
+                if (showLog)
+                {
+                    UnityTipsHelper.Show($"{packagePath} 不存在此包 无法移除");
+                }
+
+                return false;
+            }
+
+            //查询依赖 他被其他包依赖时 无法移除必须先移除依赖包
+            var versionData = PackageVersionHelper.GetPackageVersionData(packageName);
+            if (versionData != null)
+            {
+                if (versionData.DependenciesSelf != null)
+                {
+                    foreach (var dependencyInfo in versionData.DependenciesSelf)
+                    {
+                        var name    = dependencyInfo.Name;
+                        var hubData = PackageHubHelper.GetPackageHubData(name);
+                        if (hubData != null)
+                        {
+                            if (hubData.Install)
+                            {
+                                if (showLog)
+                                {
+                                    UnityTipsHelper.Show($"无法移除此包: {packageName} 因为被{hubData.PackageName}引用 必须先移除依赖");
+                                }
+
+                                return false;
+                            }
+                        }
+                    }
+                }
             }
 
             return true;
