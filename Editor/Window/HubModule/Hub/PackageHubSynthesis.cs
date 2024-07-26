@@ -13,7 +13,7 @@ namespace ET.PackageManager.Editor
     [HideReferenceObjectPicker]
     public class PackageHubSynthesis
     {
-        [TableList(DrawScrollView = true, AlwaysExpanded = true, IsReadOnly = true)]
+        [TableList(DrawScrollView = true, IsReadOnly = true)]
         [BoxGroup("所有包", centerLabel: true)]
         [HideLabel]
         [ShowInInspector]
@@ -42,8 +42,10 @@ namespace ET.PackageManager.Editor
             {
                 var packageName = package.PackageName;
 
+                package.OperationState = true;
                 new PackageRequestTarget(packageName, (info) =>
                 {
+                    package.OperationState = false;
                     RequestComplete();
                     package.RefreshInfo(info);
                 });
