@@ -102,6 +102,7 @@ namespace ET.PackageManager.Editor
                     {
                         PackageAuthor = null;
                         EditorApplication.ExecuteMenuItem("Window/Package Manager");
+                        ETPackageAutoTool.CloseWindowRefresh();
                     });
 
                 /* 测试无法移除 所以改其他方法
