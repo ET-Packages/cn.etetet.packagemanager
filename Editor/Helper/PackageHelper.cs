@@ -316,7 +316,9 @@ namespace ET.PackageManager.Editor
             EditorUtility.ClearProgressBar();
         }
 
-        public static void CheckUpdateTarget(string name, Action<string> callback)
+        private static HashSet<string> m_RequestTargets = new();
+
+        public static void CheckUpdateTarget(string name, Action<string> callback, bool showBar = false)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -337,11 +339,29 @@ namespace ET.PackageManager.Editor
                 callback?.Invoke(version);
                 return;
             }
-            
-            EditorUtility.DisplayProgressBar("同步信息", $"{name} 请求中...", 0);
+
+            if (showBar)
+            {
+                EditorUtility.DisplayProgressBar("同步信息", $"{name} 请求中...", 0);
+            }
+
+            if (m_RequestTargets.Contains(name))
+            {
+                callback?.Invoke("");
+                return;
+            }
+
+            m_RequestTargets.Add(name);
 
             new PackageRequestTarget(name, (packageInfo) =>
             {
+                m_RequestTargets.Remove(name);
+                if (showBar)
+                {
+                    EditorUtility.ClearProgressBar();
+                }
+
+                if (packageInfo == null) return;
                 var lastVersion = packageInfo.version;
                 if (packageInfo.versions != null)
                 {
@@ -351,7 +371,6 @@ namespace ET.PackageManager.Editor
                 ResetPackageLastInfo(packageInfo.name, lastVersion);
                 UpdateAllLastPackageInfo();
                 callback?.Invoke(lastVersion);
-                EditorUtility.ClearProgressBar();
             });
         }
     }
