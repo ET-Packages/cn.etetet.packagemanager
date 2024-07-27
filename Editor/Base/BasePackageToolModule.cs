@@ -20,18 +20,6 @@ namespace ET.PackageManager.Editor
         [HideInInspector]
         public object UserData { get; internal set; }
 
-        protected OdinMenuItem MenuItem;
-
-        public void SelectSelf()
-        {
-            if (MenuItem == null) return;
-            MenuItem.Select();
-            if (Tree.Selection.SelectedValue is BaseTreeMenuItem menuItem)
-            {
-                menuItem.SelectionMenu();
-            }
-        }
-
         public virtual void SelectionMenu()
         {
         }
