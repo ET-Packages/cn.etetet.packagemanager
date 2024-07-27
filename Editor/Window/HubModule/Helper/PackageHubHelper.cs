@@ -326,62 +326,46 @@ namespace ET.PackageManager.Editor
 
         #endregion
 
-        private static Dictionary<string, EPackageCategoryType> m_AllCategoryType;
-
-        public static Dictionary<string, EPackageCategoryType> AllCategoryType
+        public static Dictionary<string, List<PackageHubData>> GetNextCategoryData(List<PackageHubData> allPackages, int layer)
         {
-            get
+            Dictionary<string, List<PackageHubData>> nextCategory = new();
+            foreach (var package in allPackages)
             {
-                if (m_AllCategoryType == null)
+                var categoryList = package.PackageCategory.Split("/");
+                var category     = "";
+                if (categoryList.Length >= layer)
                 {
-                    m_AllCategoryType = new();
-                    var allCategoryType = Enum.GetValues(typeof(EPackageCategoryType));
-                    foreach (EPackageCategoryType categoryType in allCategoryType)
+                    category = categoryList[layer - 1];
+                    if (string.IsNullOrEmpty(category))
                     {
-                        m_AllCategoryType.Add(categoryType.ToString(), categoryType);
-                    }
-                }
-
-                return m_AllCategoryType;
-            }
-        }
-
-        private static Dictionary<string, EPackageCategoryType> PackageCategoryTypeDict = new();
-
-        public static EPackageCategoryType GetCategoryType(PackageHubData data)
-        {
-            if (PackageCategoryTypeDict.TryGetValue(data.PackageName, out EPackageCategoryType type))
-            {
-                return type;
-            }
-
-            var packageName = data.PackageName;
-            if (string.IsNullOrEmpty(data.PackageCategory))
-            {
-                PackageCategoryTypeDict[packageName] = EPackageCategoryType.Other;
-            }
-            else
-            {
-                var categoryList = data.PackageCategory.Split("/");
-                if (categoryList != null && categoryList.Length > 0)
-                {
-                    var firstCategory = categoryList[0];
-                    if (AllCategoryType.ContainsKey(firstCategory))
-                    {
-                        PackageCategoryTypeDict[packageName] = AllCategoryType[firstCategory];
-                    }
-                    else
-                    {
-                        PackageCategoryTypeDict[packageName] = EPackageCategoryType.Other;
+                        if (layer == 1)
+                        {
+                            category = EPackageCategoryType.Other.ToString();
+                        }
                     }
                 }
                 else
                 {
-                    PackageCategoryTypeDict[packageName] = EPackageCategoryType.Other;
+                    if (layer == 1)
+                    {
+                        category = EPackageCategoryType.Other.ToString();
+                    }
                 }
+
+                if (string.IsNullOrEmpty(category))
+                {
+                    continue;
+                }
+
+                if (!nextCategory.ContainsKey(category))
+                {
+                    nextCategory.Add(category, new List<PackageHubData>());
+                }
+
+                nextCategory[category].Add(package);
             }
 
-            return PackageCategoryTypeDict[packageName];
+            return nextCategory;
         }
     }
 }

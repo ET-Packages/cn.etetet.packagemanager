@@ -3,7 +3,7 @@
   "displayName": "ET.PackageManager",
   "version": "0.0.4",
   "unity": "2022.3",
-  "category": "Core",
+  "category": "Core/Manager",
   "description": "ETPackageManager >>> 文档: https://lib9kmxvq7k.feishu.cn/wiki/DzqwwwBJvixRvtkCI4dcatGcnAd",
   "author": {
     "name": "YIUI",

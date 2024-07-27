@@ -24,7 +24,7 @@ namespace ET.PackageManager.Editor
         [BoxGroup("所有包", centerLabel: true)]
         [HideLabel]
         [ShowInInspector]
-        public List<PackageHubData> AllPackages = new();
+        public List<PackageHubData> AllPackages;
 
         private PackageCategoryData m_CategoryData;
 
@@ -42,48 +42,42 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
+            AllPackages    = m_CategoryData.AllPackages;
             m_CategoryType = m_CategoryData.CategoryType;
-        }
 
-        public override void SelectionMenu()
-        {
-            if (PackageHubHelper.PackageHubAsset == null)
+            if (m_CategoryType is EPackageCategoryType.All or EPackageCategoryType.Other)
             {
-                Debug.LogError($" PackageHubAsset == null ");
                 return;
             }
 
-            AllPackages.Clear();
-            foreach (var package in PackageHubHelper.PackageHubAsset.AllPackageData.Values)
-            {
-                package.InitRequestInfo();
-
-                switch (m_CategoryType)
-                {
-                    case EPackageCategoryType.All:
-                        AllPackages.Add(package);
-                        break;
-                    case EPackageCategoryType.Other:
-                        if (string.IsNullOrEmpty(package.PackageCategory) || PackageHubHelper.GetCategoryType(package) == m_CategoryType)
-                        {
-                            AllPackages.Add(package);
-                        }
-
-                        break;
-                    default:
-                        var categoryType = PackageHubHelper.GetCategoryType(package);
-                        if (categoryType == m_CategoryType)
-                        {
-                            AllPackages.Add(package);
-                        }
-
-                        break;
-                }
-            }
+            //不限制可以无限层
+            GetNextCategory(m_CategoryData.Layer + 1);
         }
 
         public override void OnDestroy()
         {
+        }
+
+        private void GetNextCategory(int layer)
+        {
+            var nextCategory = PackageHubHelper.GetNextCategoryData(AllPackages, layer);
+
+            if (nextCategory is not { Count: > 0 }) return;
+
+            foreach (var category in nextCategory.Keys)
+            {
+                var categoryPath = $"{m_CategoryData.CategoryPath}/{category}";
+
+                var menuItem = new TreeMenuItem<PackageCategoryModule>(AutoTool, Tree, categoryPath, EditorIcons.Folder);
+                menuItem.UserData = new PackageCategoryData
+                {
+                    CategoryType = m_CategoryType,
+                    Category     = category,
+                    CategoryPath = categoryPath,
+                    Layer        = layer,
+                    AllPackages  = nextCategory[category],
+                };
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿#if ODIN_INSPECTOR
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities.Editor;
 using UnityEngine;
@@ -58,17 +60,41 @@ namespace ET.PackageManager.Editor
 
         private void CreateCategory()
         {
-            var allCategoryType = Enum.GetValues(typeof(EPackageCategoryType));
-            foreach (EPackageCategoryType categoryType in allCategoryType)
+            if (PackageHubHelper.PackageHubAsset == null) return;
+            var allPackageData = PackageHubHelper.PackageHubAsset.AllPackageData?.Values;
+            if (allPackageData is not { Count: > 0 })
             {
-                var categoryName = categoryType.ToString();
-                var categoryPath = $"{ModuleName}/{categoryName}";
-                var menuItem     = new TreeMenuItem<PackageCategoryModule>(AutoTool, Tree, categoryPath, EditorIcons.Folder);
-                menuItem.UserData = new PackageCategoryData
+                UnityTipsHelper.Show("没有任何包数据！");
+                return;
+            }
+
+            var packageList = new List<PackageHubData>();
+            foreach (var package in allPackageData)
+            {
+                packageList.Add(package);
+            }
+
+            var allName   = EPackageCategoryType.All.ToString();
+            var otherName = EPackageCategoryType.Other.ToString();
+            CreateCategoryItem(allName, EPackageCategoryType.All, packageList);
+
+            var allCategoryData = PackageHubHelper.GetNextCategoryData(packageList, 1);
+            if (allCategoryData is { Count: > 0 })
+            {
+                var keyList = allCategoryData.Keys.ToList();
+                keyList.Sort();
+
+                foreach (var key in keyList)
                 {
-                    CategoryType = categoryType,
-                    Category     = categoryName,
-                };
+                    var categoryName = key;
+                    if (categoryName == otherName) continue;
+                    CreateCategoryItem(categoryName, EPackageCategoryType.Custom, allCategoryData[key]);
+                }
+            }
+
+            if (allCategoryData.TryGetValue(otherName, out var value))
+            {
+                CreateCategoryItem(otherName, EPackageCategoryType.Other, value);
             }
 
             foreach (var menu in Tree.MenuItems)
@@ -77,7 +103,7 @@ namespace ET.PackageManager.Editor
                 {
                     foreach (var item in menu.ChildMenuItems)
                     {
-                        if (item.Name == EPackageCategoryType.All.ToString())
+                        if (item.Name == allName)
                         {
                             item.Select();
                             break;
@@ -87,6 +113,20 @@ namespace ET.PackageManager.Editor
                     break;
                 }
             }
+        }
+
+        private void CreateCategoryItem(string categoryName, EPackageCategoryType categoryType, List<PackageHubData> categoryData)
+        {
+            var categoryPath = $"{ModuleName}/{categoryName}";
+            var menuItem     = new TreeMenuItem<PackageCategoryModule>(AutoTool, Tree, categoryPath, EditorIcons.Folder);
+            menuItem.UserData = new PackageCategoryData
+            {
+                CategoryType = categoryType,
+                Category     = categoryName,
+                CategoryPath = categoryPath,
+                Layer        = 1,
+                AllPackages  = categoryData,
+            };
         }
     }
 }
