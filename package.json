@@ -1,8 +1,9 @@
 {
   "name": "cn.etetet.packagemanager",
   "displayName": "ET.PackageManager",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "unity": "2022.3",
+  "category": "Core",
   "description": "ETPackageManager >>> 文档: https://lib9kmxvq7k.feishu.cn/wiki/DzqwwwBJvixRvtkCI4dcatGcnAd",
   "author": {
     "name": "YIUI",
