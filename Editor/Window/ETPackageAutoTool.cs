@@ -15,7 +15,7 @@ namespace ET.PackageManager.Editor
     public class ETPackageAutoTool : OdinMenuEditorWindow
     {
         [MenuItem("ET/ETPackage 包管理自动化工具")]
-        private static void OpenWindow()
+        public static void OpenWindow()
         {
             var window = GetWindow<ETPackageAutoTool>();
             if (window != null)
@@ -24,7 +24,7 @@ namespace ET.PackageManager.Editor
 
         //[MenuItem("ET/关闭ETPackage 包管理自动化工具")]
         //错误时使用的 面板出现了错误 会导致如何都打不开 就需要先关闭
-        private static void CloseWindow()
+        public static void CloseWindow()
         {
             GetWindow<ETPackageAutoTool>()?.Close();
         }

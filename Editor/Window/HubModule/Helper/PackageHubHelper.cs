@@ -321,6 +321,8 @@ namespace ET.PackageManager.Editor
             {
                 m_RequestingAll = false;
                 EditorUtility.ClearProgressBar();
+                ETPackageAutoTool.CloseWindowRefresh();
+                ETPackageAutoTool.OpenWindow();
             }
         }
 
@@ -331,9 +333,9 @@ namespace ET.PackageManager.Editor
             Dictionary<string, List<PackageHubData>> nextCategory = new();
             foreach (var package in allPackages)
             {
-                var categoryList = package.PackageCategory.Split("/");
+                var categoryList = package.PackageCategory?.Split("/");
                 var category     = "";
-                if (categoryList.Length >= layer)
+                if (categoryList != null &&categoryList.Length >= layer)
                 {
                     category = categoryList[layer - 1];
                     if (string.IsNullOrEmpty(category))
