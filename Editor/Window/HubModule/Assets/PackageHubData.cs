@@ -197,8 +197,17 @@ namespace ET.PackageManager.Editor
             var currentVersion = PackageHelper.GetPackageCurrentVersion(PackageName);
             m_Install             = !string.IsNullOrEmpty(currentVersion);
             PackageCurrentVersion = m_Install ? currentVersion : "未安装";
-            PackageCategory       = info.category;
             m_CanRemove           = PackageHubHelper.CheckRemove(PackageName);
+
+            if (string.IsNullOrEmpty(info.category))
+            {
+                var currentInfo = PackageHelper.GetPackageInfo(PackageName);
+                PackageCategory = currentInfo == null ? "" : currentInfo.category;
+            }
+            else
+            {
+                PackageCategory = info.category;
+            }
         }
 
         public void InitRequestInfo()

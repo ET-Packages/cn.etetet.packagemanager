@@ -175,6 +175,11 @@ namespace ET.PackageManager.Editor
             return "";
         }
 
+        public static UnityEditor.PackageManager.PackageInfo GetPackageInfo(string name)
+        {
+            return m_CurrentRegisteredPackages.GetValueOrDefault(name);
+        }
+
         public static string GetPackageCurrentVersion(string name)
         {
             if (m_CurrentRegisteredPackages.TryGetValue(name, out var info))
@@ -352,24 +357,24 @@ namespace ET.PackageManager.Editor
             m_RequestTargets.Add(name);
 
             new PackageRequestTarget(name, (packageInfo) =>
-                                           {
-                                               m_RequestTargets.Remove(name);
-                                               if (showBar)
-                                               {
-                                                   EditorUtility.ClearProgressBar();
-                                               }
+            {
+                m_RequestTargets.Remove(name);
+                if (showBar)
+                {
+                    EditorUtility.ClearProgressBar();
+                }
 
-                                               if (packageInfo == null) return;
-                                               var lastVersion = packageInfo.version;
-                                               if (packageInfo.versions != null)
-                                               {
-                                                   lastVersion = packageInfo.versions.latest;
-                                               }
+                if (packageInfo == null) return;
+                var lastVersion = packageInfo.version;
+                if (packageInfo.versions != null)
+                {
+                    lastVersion = packageInfo.versions.latest;
+                }
 
-                                               ResetPackageLastInfo(packageInfo.name, lastVersion);
-                                               UpdateAllLastPackageInfo();
-                                               callback?.Invoke(lastVersion);
-                                           });
+                ResetPackageLastInfo(packageInfo.name, lastVersion);
+                UpdateAllLastPackageInfo();
+                callback?.Invoke(lastVersion);
+            });
         }
     }
 }
