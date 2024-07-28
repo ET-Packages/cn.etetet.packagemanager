@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -328,43 +329,65 @@ namespace ET.PackageManager.Editor
 
         #endregion
 
-        public static Dictionary<string, List<PackageHubData>> GetNextCategoryData(List<PackageHubData> allPackages, int layer)
+        public static Dictionary<string, List<PackageHubData>> GetNextCategoryData(List<PackageHubData> allPackages, int layer, string lastAllPath = "")
         {
             Dictionary<string, List<PackageHubData>> nextCategory = new();
             foreach (var package in allPackages)
             {
-                var categoryList = package.PackageCategory?.Split("/");
-                var category     = "";
-                if (categoryList != null &&categoryList.Length >= layer)
+                var categoryAList = package.PackageCategory?.Split("|");
+                if (categoryAList == null)
                 {
-                    category = categoryList[layer - 1];
-                    if (string.IsNullOrEmpty(category))
+                    if (layer == 1)
+                    {
+                        nextCategory[EPackageCategoryType.Other.ToString()].Add(package);
+                    }
+
+                    continue;
+                }
+
+                foreach (var categoryA in categoryAList)
+                {
+                    var categoryList = categoryA.Split("/");
+                    var category     = "";
+                    if (categoryList != null && categoryList.Length >= layer)
+                    {
+                        if (layer > 1 && !string.IsNullOrEmpty(lastAllPath))
+                        {
+                            if (!categoryA.Contains(lastAllPath))
+                            {
+                                continue;
+                            }
+                        }
+
+                        category = categoryList[layer - 1];
+                        if (string.IsNullOrEmpty(category))
+                        {
+                            if (layer == 1)
+                            {
+                                category = EPackageCategoryType.Other.ToString();
+                            }
+                        }
+                    }
+                    else
                     {
                         if (layer == 1)
                         {
                             category = EPackageCategoryType.Other.ToString();
                         }
                     }
-                }
-                else
-                {
-                    if (layer == 1)
+
+                    if (string.IsNullOrEmpty(category))
                     {
-                        category = EPackageCategoryType.Other.ToString();
+                        continue;
                     }
-                }
 
-                if (string.IsNullOrEmpty(category))
-                {
-                    continue;
-                }
+                    if (!nextCategory.ContainsKey(category))
+                    {
+                        nextCategory.Add(category, new List<PackageHubData>());
+                    }
 
-                if (!nextCategory.ContainsKey(category))
-                {
-                    nextCategory.Add(category, new List<PackageHubData>());
+                    nextCategory[category].Add(package);
                 }
-
-                nextCategory[category].Add(package);
             }
 
             return nextCategory;

@@ -173,6 +173,14 @@ namespace ET.PackageManager.Editor
             UpdatePackagesInfo();
         }
 
+        [Button("文档", 30, Icon = SdfIconType.Link45deg, IconAlignment = IconAlignment.LeftOfText)]
+        [PropertyOrder(-999)]
+        [ShowIf("CheckUpdateAllEnd")]
+        public void OpenDocument()
+        {
+            ETPackageDocumentModule.ETPackageVersion();
+        }
+
         private async Task UpdatePackagesInfo()
         {
             var count = m_FilterPackageInfoDataList.Count;

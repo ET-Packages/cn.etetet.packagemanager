@@ -112,7 +112,12 @@ namespace ET.PackageManager.Editor
             EditorGUILayout.LabelField("提示:安装Odin 可使用更详细丰富的管理界面");
 
             GUILayout.Space(10);
-
+            if (GUILayout.Button("ETPackageManager 包管理文档"))
+            {
+                Application.OpenURL("https://lib9kmxvq7k.feishu.cn/wiki/DzqwwwBJvixRvtkCI4dcatGcnAd");
+            }
+            GUILayout.Space(10);
+            
             EditorGUILayout.LabelField(m_UpdatePackageInfo, m_CustomStyle);
         }
     }
