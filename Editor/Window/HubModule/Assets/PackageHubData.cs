@@ -30,6 +30,48 @@ namespace ET.PackageManager.Editor
         [LabelText("作者")]
         public string PackageAuthor;
 
+        [NonSerialized]
+        [OdinSerialize]
+        [HideInInspector]
+        public string PackageAuthorURL;
+
+        [HideLabel]
+        [TableColumnWidth(30, Resizable = false)]
+        [VerticalGroup("连接", -999)]
+        [Button(30, Icon = SdfIconType.PersonFill, IconAlignment = IconAlignment.LeftOfText)]
+        [ShowIf("ShowIfAuthorURL")]
+        public void OpenPackageAuthorURL()
+        {
+            if (string.IsNullOrEmpty(PackageAuthorURL)) return;
+            Application.OpenURL(PackageAuthorURL);
+        }
+
+        private bool ShowIfAuthorURL()
+        {
+            return !string.IsNullOrEmpty(PackageAuthorURL);
+        }
+
+        [NonSerialized]
+        [OdinSerialize]
+        [HideInInspector]
+        public string PackageRepositoryURL;
+
+        [HideLabel]
+        [TableColumnWidth(30, Resizable = false)]
+        [VerticalGroup("连接", -999)]
+        [Button(30, Icon = SdfIconType.Github, IconAlignment = IconAlignment.LeftOfText)]
+        [ShowIf("ShowIfRepositoryURL")]
+        public void OpenPackageRepositoryURL()
+        {
+            if (string.IsNullOrEmpty(PackageRepositoryURL)) return;
+            Application.OpenURL(PackageRepositoryURL);
+        }
+
+        private bool ShowIfRepositoryURL()
+        {
+            return !string.IsNullOrEmpty(PackageRepositoryURL);
+        }
+
         [TableColumnWidth(250, Resizable = false)]
         [VerticalGroup("信息")]
         [NonSerialized]
@@ -99,17 +141,6 @@ namespace ET.PackageManager.Editor
         {
             UnityTipsHelper.CallBackOk($"确定移除 {PackageName}", () =>
             {
-                /*
-                 UnityTipsHelper.CallBackOk($"请到 Package Manager 中手动移除 {PackageName}",
-                    () =>
-                    {
-                        PackageAuthor = null;
-                        EditorApplication.ExecuteMenuItem("Window/Package Manager");
-                        ETPackageAutoTool.CloseWindowRefresh();
-                    });
-                */
-
-                //测试无法移除 所以改其他方法
                 EditorUtility.DisplayProgressBar("同步信息", $"移除 {PackageName}...", 0);
                 OperationState = true;
                 new PackageRequestRemove(PackageName, (result) =>
@@ -191,7 +222,34 @@ namespace ET.PackageManager.Editor
         public void RefreshInfo(UnityEditor.PackageManager.PackageInfo info)
         {
             if (info == null) return;
-            PackageAuthor      = info.author.name;
+            PackageAuthor    = info.author?.name ?? "";
+            PackageAuthorURL = info.author?.url ?? "";
+            if (info.repository != null)
+            {
+                var url = info.repository.url ?? "";
+                if (string.IsNullOrEmpty(url))
+                {
+                    PackageRepositoryURL = "";
+                }
+                else
+                {
+                    var http      = "http";
+                    var httpIndex = url.IndexOf(http, StringComparison.Ordinal);
+                    if (httpIndex > 0)
+                    {
+                        PackageRepositoryURL = url.Substring(httpIndex);
+                    }
+                    else
+                    {
+                        PackageRepositoryURL = "";
+                    }
+                }
+            }
+            else
+            {
+                PackageRepositoryURL = "";
+            }
+
             PackageDescription = info.description;
             PackageLastVersion = info.version;
             var currentVersion = PackageHelper.GetPackageCurrentVersion(PackageName);
