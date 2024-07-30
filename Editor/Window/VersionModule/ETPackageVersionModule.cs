@@ -170,10 +170,7 @@ namespace ET.PackageManager.Editor
         [ShowIf("CheckUpdateAllEnd")]
         public void SyncPackages()
         {
-            UnityTipsHelper.CallBack($"确定同步当前所有版本?", () =>
-            {
-                UpdatePackagesInfo();
-            });
+            UnityTipsHelper.CallBack($"确定同步当前所有版本?\n注意同步后需要重启Unity 否则Unity不会加载更新最新版本信息!!!", () => { UpdatePackagesInfo(); });
         }
 
         [Button("文档", 30, Icon = SdfIconType.Link45deg, IconAlignment = IconAlignment.LeftOfText)]
@@ -195,6 +192,13 @@ namespace ET.PackageManager.Editor
             }
 
             EditorUtility.ClearProgressBar();
+            UnityTipsHelper.CallBack($"已同步完成!!! 确定?重启Unity编辑器?\n如果你想在工具里看到最新版本信息请重启Unity!!!", () =>
+            {
+                UnityTipsHelper.CallBack($"注意保存场景!!! 确定直接关闭Unity 自行重启!!!", () =>
+                {
+                    EditorApplication.Exit(0);
+                });
+            });
             ETPackageAutoTool.CloseWindowRefresh();
         }
 
