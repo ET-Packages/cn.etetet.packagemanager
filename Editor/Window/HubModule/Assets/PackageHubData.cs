@@ -217,7 +217,7 @@ namespace ET.PackageManager.Editor
         [ShowInInspector]
         [TextArea]
         [DisplayAsString(false, 15, TextAlignment.Center, true)]
-        private static string m_CheckUpdateAllReqing = "操作中";
+        private const string m_CheckUpdateAllReqing = "操作中";
 
         public void RefreshInfo(UnityEditor.PackageManager.PackageInfo info)
         {

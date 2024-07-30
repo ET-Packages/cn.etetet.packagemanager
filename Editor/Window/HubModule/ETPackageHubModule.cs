@@ -17,7 +17,7 @@ namespace ET.PackageManager.Editor
         [HideIf("CheckUpdateAllEnd")]
         [ShowInInspector]
         [DisplayAsString(false, 100, TextAlignment.Center, true)]
-        private static string m_CheckUpdateAllReqing = "请求所有包最新数据中...";
+        private const string m_CheckUpdateAllReqing = "请求所有包最新数据中...";
 
         public bool CheckUpdateAllEnd { get; private set; }
 
