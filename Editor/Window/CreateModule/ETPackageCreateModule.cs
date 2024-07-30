@@ -1,6 +1,7 @@
 ﻿#if ODIN_INSPECTOR
 using System;
 using Sirenix.OdinInspector;
+using UnityEditor;
 using UnityEngine;
 
 namespace ET.PackageManager.Editor
@@ -131,13 +132,8 @@ namespace ET.PackageManager.Editor
 
             UnityTipsHelper.Show($"创建成功 [ {PackageName} ]");
 
-            var globalConfig = ScriptableLoader.Load<ET.GlobalConfig>();
-            if (globalConfig != null)
-            {
-                CodeModeChangeHelper.ChangeToCodeMode(globalConfig.CodeMode.ToString());
-            }
-
-            ScriptsReferencesHelper.Run();
+            EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectAssemblyReference");
+            EditorApplication.ExecuteMenuItem("ET/Loader/UpdateScriptsReferences");
             ETPackageAutoTool.CloseWindowRefresh();
         }
 

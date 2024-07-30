@@ -1,10 +1,7 @@
 {
     "name": "ET.PackageManager.Editor",
     "rootNamespace": "ET",
-    "references": [
-        "GUID:6e17cd4649ea94c0cb18f30a60b9b4b4",
-        "GUID:000a53018e5e7c14aa75273e1f7be8e2"
-    ],
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],

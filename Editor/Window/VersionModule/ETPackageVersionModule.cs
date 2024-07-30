@@ -170,7 +170,10 @@ namespace ET.PackageManager.Editor
         [ShowIf("CheckUpdateAllEnd")]
         public void SyncPackages()
         {
-            UpdatePackagesInfo();
+            UnityTipsHelper.CallBack($"确定同步当前所有版本?", () =>
+            {
+                UpdatePackagesInfo();
+            });
         }
 
         [Button("文档", 30, Icon = SdfIconType.Link45deg, IconAlignment = IconAlignment.LeftOfText)]
@@ -197,7 +200,7 @@ namespace ET.PackageManager.Editor
 
         public void SyncPackageUpdate(string name, string version)
         {
-            Task.Run(UpdatePackagesInfo);
+            UpdatePackagesInfo();
 
             //EditorUtility.DisplayProgressBar($"更新包: {name} >> {version}", "", 0);
             //TODO 其他后续一键功能
