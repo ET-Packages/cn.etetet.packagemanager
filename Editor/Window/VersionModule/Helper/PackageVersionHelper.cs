@@ -30,6 +30,11 @@ namespace ET.PackageManager.Editor
             }
         }
 
+        public static void Unload()
+        {
+            m_PackageVersionAsset = null;
+        }
+
         public static void SaveAsset()
         {
             if (m_PackageVersionAsset == null) return;

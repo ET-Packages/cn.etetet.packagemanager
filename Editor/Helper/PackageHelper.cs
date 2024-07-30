@@ -50,6 +50,11 @@ namespace ET.PackageManager.Editor
             }
         }
 
+        public static void Unload()
+        {
+            m_PackageInfoAsset = null;
+        }
+
         private static bool LoadAsset()
         {
             GetAllRegisteredPackages();
