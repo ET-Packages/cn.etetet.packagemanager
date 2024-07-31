@@ -181,7 +181,7 @@ namespace ET.PackageManager.Editor
             ETPackageDocumentModule.ETPackageVersion();
         }
 
-        private async Task UpdatePackagesInfo()
+        private async Task UpdatePackagesInfo(bool close = true)
         {
             var count = m_FilterPackageInfoDataList.Count;
             for (int i = 0; i < count; i++)
@@ -191,21 +191,30 @@ namespace ET.PackageManager.Editor
                 await ChangePackageInfo(packageInfo);
             }
 
-            EditorUtility.ClearProgressBar();
             PackageHelper.Unload();
             PackageVersionHelper.Unload();
+            if (close)
+            {
+                EditorApplication.ExecuteMenuItem("ET/Init/RepairDependencies");
+                EditorUtility.ClearProgressBar();
+                ETPackageAutoTool.CloseWindowRefresh();
+            }
+        }
+
+        public async Task SyncPackageUpdate(string name, string version)
+        {
+            await UpdatePackagesInfo(false);
+            //TODO 下面的流程还需要优化
+            //因为每个按钮可能是异步的 无法保证他执行完毕后再执行下一个
+            //目前手动点下面那些按钮 可以解决大部分问题
+            EditorUtility.ClearProgressBar();
+            EditorApplication.ExecuteMenuItem("ET/Init/RepairDependencies");
+            EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectFile");
+            EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectAssemblyReference");
+            EditorApplication.ExecuteMenuItem("ET/Loader/UpdateScriptsReferences");
             ETPackageAutoTool.CloseWindowRefresh();
         }
-
-        public void SyncPackageUpdate(string name, string version)
-        {
-            UpdatePackagesInfo();
-
-            //EditorUtility.DisplayProgressBar($"更新包: {name} >> {version}", "", 0);
-            //TODO 其他后续一键功能
-            //EditorUtility.ClearProgressBar();
-        }
-
+  
         private async Task ChangePackageInfo(PackageVersionData packageInfoData)
         {
             var assetPath   = $"Packages/{packageInfoData.Name}/package.json";

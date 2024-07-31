@@ -1,7 +1,7 @@
 ﻿{
   "name": "cn.etetet.packagemanager",
   "displayName": "ET.PackageManager",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "unity": "2022.3",
   "category": "Core/Manager|UI/YIUI",
   "description": "ETPackageManager ET包管理 >>> 文档: https://lib9kmxvq7k.feishu.cn/wiki/DzqwwwBJvixRvtkCI4dcatGcnAd",

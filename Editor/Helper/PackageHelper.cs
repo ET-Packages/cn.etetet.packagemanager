@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.PackageManager.Requests;
 using UnityEditor.PackageManager;
@@ -380,6 +381,24 @@ namespace ET.PackageManager.Editor
                 UpdateAllLastPackageInfo();
                 callback?.Invoke(lastVersion);
             });
+        }
+
+        public static int GetVersionToInt(string version)
+        {
+            string input       = version;
+            string numbersOnly = Regex.Replace(input, "[^0-9]", "");
+
+            if (int.TryParse(numbersOnly, out int result))
+            {
+                return result;
+            }
+            else
+            {
+                Debug.LogError("字符串中没有有效的数字可以转换。");
+                return 0;
+            }
+
+            return 0;
         }
     }
 }
