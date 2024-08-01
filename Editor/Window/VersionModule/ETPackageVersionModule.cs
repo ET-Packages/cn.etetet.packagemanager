@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Sirenix.OdinInspector;
+using Sirenix.Serialization;
+using SerializationUtility = Sirenix.Serialization.SerializationUtility;
 using UnityEditor;
 using UnityEngine;
 
@@ -183,11 +185,14 @@ namespace ET.PackageManager.Editor
 
         private async Task UpdatePackagesInfo(bool close = true)
         {
-            var count = m_FilterPackageInfoDataList.Count;
-            for (int i = 0; i < count; i++)
+            var count = m_AllPackageInfoDataDic.Count;
+            var index = 0;
+            foreach (var data in m_AllPackageInfoDataDic)
             {
-                var packageInfo = m_FilterPackageInfoDataList[i];
-                EditorUtility.DisplayProgressBar("同步信息", $"更新{packageInfo.Name}", i * 1f / count);
+                index++;
+                var packageInfo = data.Value;
+                if (!CheckPackageChange(packageInfo)) continue;
+                EditorUtility.DisplayProgressBar("同步信息", $"更新{packageInfo.Name}", index * 1f / count);
                 await ChangePackageInfo(packageInfo);
             }
 
@@ -204,6 +209,7 @@ namespace ET.PackageManager.Editor
         public async Task SyncPackageUpdate(string name, string version)
         {
             await UpdatePackagesInfo(false);
+
             //TODO 下面的流程还需要优化
             //因为每个按钮可能是异步的 无法保证他执行完毕后再执行下一个
             //目前手动点下面那些按钮 可以解决大部分问题
@@ -214,7 +220,65 @@ namespace ET.PackageManager.Editor
             EditorApplication.ExecuteMenuItem("ET/Loader/UpdateScriptsReferences");
             ETPackageAutoTool.CloseWindowRefresh();
         }
-  
+
+        private bool CheckPackageChange(PackageVersionData packageInfoData)
+        {
+            if (!packageInfoData.IsETPackage)
+            {
+                return false;
+            }
+
+            var oldAllPackage = PackageVersionHelper.PackageVersionAsset.AllPackageVersionData;
+            if (!oldAllPackage.ContainsKey(packageInfoData.Name))
+            {
+                return false;
+            }
+
+            var oldPackageInfo = oldAllPackage[packageInfoData.Name];
+
+            //对比版本
+            if (packageInfoData.Version != oldPackageInfo.Version)
+            {
+                return true;
+            }
+
+            //对比依赖
+            if (packageInfoData.Dependencies.Count != oldPackageInfo.Dependencies.Count)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < packageInfoData.Dependencies.Count; i++)
+            {
+                var dependency    = packageInfoData.Dependencies[i];
+                var oldDependency = oldPackageInfo.Dependencies[i];
+                if (dependency.Name != oldDependency.Name ||
+                    dependency.Version != oldDependency.Version)
+                {
+                    return true;
+                }
+            }
+
+            //对比依赖我
+            if (packageInfoData.DependenciesSelf.Count != oldPackageInfo.DependenciesSelf.Count)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < packageInfoData.DependenciesSelf.Count; i++)
+            {
+                var dependency    = packageInfoData.DependenciesSelf[i];
+                var oldDependency = oldPackageInfo.DependenciesSelf[i];
+                if (dependency.Name != oldDependency.Name ||
+                    dependency.Version != oldDependency.Version)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private async Task ChangePackageInfo(PackageVersionData packageInfoData)
         {
             var assetPath   = $"Packages/{packageInfoData.Name}/package.json";
@@ -229,9 +293,6 @@ namespace ET.PackageManager.Editor
 
             try
             {
-                //TODO 这里没有判断是不是有更新全部都同步
-                //首先这个频率不高 其次判断也节省不了多少时间 如果有需要在扩展
-
                 string fileContent = await File.ReadAllTextAsync(packagePath);
 
                 JObject json = JObject.Parse(fileContent);
@@ -241,7 +302,7 @@ namespace ET.PackageManager.Editor
 
                 await File.WriteAllTextAsync(packagePath, json.ToString(), System.Text.Encoding.UTF8);
 
-                //Debug.Log($"修改成功 {packageInfoData.Name}");
+                Debug.Log($"修改成功 {packageInfoData.Name}");
             }
             catch (Exception e)
             {
@@ -271,9 +332,11 @@ namespace ET.PackageManager.Editor
 
         private readonly Dictionary<string, PackageVersionData> m_FilterPackageInfoDataDic = new();
 
+        private Dictionary<string, PackageVersionData> m_AllPackageInfoDataDic;
+
         public PackageVersionData GetPackageInfoData(string packageName)
         {
-            m_FilterPackageInfoDataDic.TryGetValue(packageName, out PackageVersionData packageInfoData);
+            m_AllPackageInfoDataDic.TryGetValue(packageName, out PackageVersionData packageInfoData);
             return packageInfoData;
         }
 
@@ -282,7 +345,7 @@ namespace ET.PackageManager.Editor
             m_FilterPackageInfoDataList.Clear();
             m_FilterPackageInfoDataDic.Clear();
             var packagesFilterTypeValues = Enum.GetValues(typeof(EPackagesFilterType));
-            foreach (var data in PackageVersionHelper.PackageVersionAsset.AllPackageVersionData)
+            foreach (var data in m_AllPackageInfoDataDic)
             {
                 var name = data.Key;
 
@@ -340,9 +403,8 @@ namespace ET.PackageManager.Editor
 
                 if (!add) continue;
 
-                var newData = infoData.Copy();
-                m_FilterPackageInfoDataList.Add(newData);
-                m_FilterPackageInfoDataDic.Add(name, newData);
+                m_FilterPackageInfoDataList.Add(infoData);
+                m_FilterPackageInfoDataDic.Add(name, infoData);
 
                 continue;
 
@@ -384,22 +446,24 @@ namespace ET.PackageManager.Editor
 
         private void LoadAllPackageInfoData()
         {
-            var allPackageInfoDataList = PackageVersionHelper.PackageVersionAsset.AllPackageVersionData;
+            m_AllPackageInfoDataDic =
+                    (Dictionary<string, PackageVersionData>)
+                    SerializationUtility.CreateCopy(PackageVersionHelper.PackageVersionAsset.AllPackageVersionData);
 
             //处理依赖检查
-            foreach (var data in allPackageInfoDataList.Values)
+            foreach (var data in m_AllPackageInfoDataDic.Values)
             {
                 var name         = data.Name;
                 var dependencies = data.Dependencies;
                 foreach (var dependency in dependencies)
                 {
-                    if (!allPackageInfoDataList.ContainsKey(dependency.Name))
+                    if (!m_AllPackageInfoDataDic.ContainsKey(dependency.Name))
                     {
                         Debug.LogError($"{name}依赖包{dependency.Name}不存在");
                         continue;
                     }
 
-                    var target = allPackageInfoDataList[dependency.Name];
+                    var target = m_AllPackageInfoDataDic[dependency.Name];
 
                     if (target.IsETPackage && !CheckVersion(dependency, target))
                     {

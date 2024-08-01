@@ -1,26 +1,33 @@
 ﻿#if ODIN_INSPECTOR
+using System;
 using System.Text.RegularExpressions;
 using Sirenix.OdinInspector;
+using Sirenix.Serialization;
 using UnityEngine;
 
 namespace ET.PackageManager.Editor
 {
+    [Serializable]
     [HideLabel]
     [HideReferenceObjectPicker]
     public class DependencyInfo
     {
+        [OdinSerialize]
         [ReadOnly]
         [LabelText("名称")]
         public string Name;
 
+        [OdinSerialize]
         [ReadOnly]
         [LabelText("版本")]
         [OnValueChanged("OnVersionChanged")]
         public string Version;
 
+        [OdinSerialize]
         [HideInInspector]
         public string SelfName;
 
+        [OdinSerialize]
         [HideInInspector]
         public bool DependenciesSelf;
 

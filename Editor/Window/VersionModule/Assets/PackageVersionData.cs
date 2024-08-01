@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Sirenix.OdinInspector;
+using Sirenix.Serialization;
 using UnityEngine;
 
 namespace ET.PackageManager.Editor
 {
+    [Serializable]
     [HideReferenceObjectPicker]
     public class PackageVersionData
     {
@@ -15,6 +17,7 @@ namespace ET.PackageManager.Editor
         [VerticalGroup("信息")]
         [ShowInInspector]
         [PropertyOrder(-50)]
+        [OdinSerialize]
         public string Name { get; private set; }
 
         [ReadOnly]
@@ -22,6 +25,7 @@ namespace ET.PackageManager.Editor
         [OnValueChanged("OnVersionChanged")]
         [VerticalGroup("信息")]
         [PropertyOrder(-45)]
+        [OdinSerialize]
         public string Version;
 
         private void OnVersionChanged()
@@ -30,8 +34,12 @@ namespace ET.PackageManager.Editor
             m_VersionValue = null;
         }
 
+        [OdinSerialize]
+        [HideInInspector]
         public bool IsETPackage { get; set; }
 
+        [OdinSerialize]
+        [HideInInspector]
         private int[] m_VersionValue;
 
         public int[] VersionValue
@@ -61,15 +69,19 @@ namespace ET.PackageManager.Editor
             }
         }
 
+        [HideReferenceObjectPicker]
+        [OdinSerialize]
         [LabelText(" ")]
         [VerticalGroup("我依赖")]
         [ListDrawerSettings(DefaultExpandedState = true)]
-        public List<DependencyInfo> Dependencies;
+        public List<DependencyInfo> Dependencies = new();
 
+        [HideReferenceObjectPicker]
+        [OdinSerialize]
         [LabelText(" ")]
         [VerticalGroup("依赖我")]
         [ListDrawerSettings(DefaultExpandedState = true)]
-        public List<DependencyInfo> DependenciesSelf;
+        public List<DependencyInfo> DependenciesSelf = new();
 
         [Button("↓大")]
         [GUIColor(1f, 0.5f, 0.5f)]
@@ -267,8 +279,13 @@ namespace ET.PackageManager.Editor
             ETPackageVersionModule.Inst.SyncPackageUpdate(Name, LastVersion);
         }
 
+        [HideInInspector]
+        [OdinSerialize]
         public bool CanUpdateVersion { get; private set; }
-        public bool IsBan            { get; private set; }
+
+        [HideInInspector]
+        [OdinSerialize]
+        public bool IsBan { get; private set; }
 
         [ReadOnly]
         [LabelText("最新版本")]
@@ -284,6 +301,8 @@ namespace ET.PackageManager.Editor
             }
         }
 
+        [HideInInspector]
+        [OdinSerialize]
         public string LastVersion { get; private set; }
 
         public PackageVersionData(string name, string version)
@@ -317,48 +336,6 @@ namespace ET.PackageManager.Editor
                     CanUpdateVersion = true;
                 }
             });
-        }
-    }
-
-    public static class PackageInfoDataExtension
-    {
-        public static PackageVersionData Copy(this PackageVersionData data)
-        {
-            var copyData = new PackageVersionData(data.Name, data.Version)
-            {
-                Dependencies     = new(),
-                DependenciesSelf = new()
-            };
-
-            if (data.Dependencies != null)
-            {
-                foreach (var dependency in data.Dependencies)
-                {
-                    copyData.Dependencies.Add(new DependencyInfo()
-                    {
-                        SelfName         = dependency.SelfName,
-                        Name             = dependency.Name,
-                        Version          = dependency.Version,
-                        DependenciesSelf = dependency.DependenciesSelf,
-                    });
-                }
-            }
-
-            if (data.DependenciesSelf != null)
-            {
-                foreach (var dependency in data.DependenciesSelf)
-                {
-                    copyData.DependenciesSelf.Add(new DependencyInfo()
-                    {
-                        SelfName         = dependency.SelfName,
-                        Name             = dependency.Name,
-                        Version          = dependency.Version,
-                        DependenciesSelf = dependency.DependenciesSelf,
-                    });
-                }
-            }
-
-            return copyData;
         }
     }
 }
