@@ -87,13 +87,19 @@ namespace ET.PackageManager.Editor
                 infoData.Dependencies = new();
                 foreach (var dependency in dependencies)
                 {
-                    infoData.Dependencies.Add(new DependencyInfo()
+                    if (!dependency.name.Contains("cn.etetet."))
                     {
-                        SelfName         = name,
-                        Name             = dependency.name,
-                        Version          = dependency.version,
-                        DependenciesSelf = false
-                    });
+                        continue;
+                    }
+
+                    infoData.Dependencies.Add(
+                        new DependencyInfo()
+                        {
+                            SelfName         = name,
+                            Name             = dependency.name,
+                            Version          = dependency.version,
+                            DependenciesSelf = false
+                        });
                 }
 
                 m_AllPackageInfoDataList.Add(name, infoData);
@@ -119,13 +125,14 @@ namespace ET.PackageManager.Editor
                         target.DependenciesSelf = new();
                     }
 
-                    target.DependenciesSelf.Add(new DependencyInfo()
-                    {
-                        SelfName         = dependency.Name,
-                        Name             = name,
-                        Version          = dependency.Version,
-                        DependenciesSelf = true,
-                    });
+                    target.DependenciesSelf.Add(
+                        new DependencyInfo()
+                        {
+                            SelfName         = dependency.Name,
+                            Name             = name,
+                            Version          = dependency.Version,
+                            DependenciesSelf = true,
+                        });
                 }
             }
         }

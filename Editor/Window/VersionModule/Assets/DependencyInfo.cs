@@ -69,7 +69,7 @@ namespace ET.PackageManager.Editor
         }
 
         //同步目标的版本 当目标name的版本与当前版本不一致时显示同步按钮
-        private bool SyncVersionShowIf()
+        public bool SyncVersionShowIf()
         {
             if (DependenciesSelf)
             {
@@ -131,7 +131,7 @@ namespace ET.PackageManager.Editor
         }
 
         //依赖我  但是我的版本已经升级了 他哪里的版本还是旧的时候显示同步按钮
-        private bool SyncSelfVersionShowIf()
+        public bool SyncSelfVersionShowIf()
         {
             if (!DependenciesSelf)
             {

@@ -54,7 +54,7 @@ namespace ET.PackageManager.Editor
     /// 版本管理
     /// </summary>
     [ETPackageMenu("版本管理", 1000)]
-    public class ETPackageVersionModule : BasePackageToolModule
+    public partial class ETPackageVersionModule : BasePackageToolModule
     {
         public static ETPackageVersionModule Inst;
 
@@ -141,20 +141,21 @@ namespace ET.PackageManager.Editor
         {
             CheckUpdateAllEnd = false;
             RequestAllResult  = false;
-            PackageHelper.CheckUpdateAll((result) =>
-            {
-                CheckUpdateAllEnd = true;
-                RequestAllResult  = result;
-                if (!result) return;
-                Search              = SearchPrefs.Value;
-                FilterType          = FilterTypePrefs.Value;
-                LastFilterType      = FilterType;
-                SyncDependency      = SyncDependencyPrefs.Value;
-                FilterOperationType = FilterOperationTypePrefs.Value;
-                LoadAllPackageInfoData();
-                LoadFilterPackageInfoData();
-                Inst = this;
-            });
+            PackageHelper.CheckUpdateAll(
+                (result) =>
+                {
+                    CheckUpdateAllEnd = true;
+                    RequestAllResult  = result;
+                    if (!result) return;
+                    Search              = SearchPrefs.Value;
+                    FilterType          = FilterTypePrefs.Value;
+                    LastFilterType      = FilterType;
+                    SyncDependency      = SyncDependencyPrefs.Value;
+                    FilterOperationType = FilterOperationTypePrefs.Value;
+                    LoadAllPackageInfoData();
+                    LoadFilterPackageInfoData();
+                    Inst = this;
+                });
         }
 
         public override void OnDestroy()
@@ -166,13 +167,13 @@ namespace ET.PackageManager.Editor
             FilterOperationTypePrefs.Value = FilterOperationType;
         }
 
-        [Button("同步", 50)]
+        [Button("同步生成", 50)]
         [GUIColor(1, 1, 0)]
         [PropertyOrder(-100)]
         [ShowIf("CheckUpdateAllEnd")]
         public void SyncPackages()
         {
-            UnityTipsHelper.CallBack($"确定同步当前所有版本?", () => { UpdatePackagesInfo(); });
+            UnityTipsHelper.CallBack($"确定同步生成当前所有改动版本?", () => { UpdatePackagesInfo(); });
         }
 
         [Button("文档", 30, Icon = SdfIconType.Link45deg, IconAlignment = IconAlignment.LeftOfText)]
