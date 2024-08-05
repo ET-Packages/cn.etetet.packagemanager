@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
+using UnityEditor;
 using UnityEngine;
 
 namespace ET.PackageManager.Editor
@@ -279,10 +280,18 @@ namespace ET.PackageManager.Editor
                 }
             }
 
-            if (syncPackage)
+            ETPackageAutoTool.CloseWindow();
+            EditorUtility.DisplayProgressBar("同步信息", $"更新{Name}中 不要动...动了不负责!! 网络不好可能要等很久...!!", 0);
+            new PackageRequestAdd(Name, (info) =>
             {
-                ETPackageVersionModule.Inst.SyncPackageUpdate(Name, LastVersion);
-            }
+                PackageHelper.Unload();
+                PackageVersionHelper.Unload();
+                EditorUtility.ClearProgressBar();
+                EditorApplication.ExecuteMenuItem("ET/Init/RepairDependencies");
+                EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectFile");
+                EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectAssemblyReference");
+                EditorApplication.ExecuteMenuItem("ET/Loader/UpdateScriptsReferences");
+            });
         }
 
         [HideInInspector]

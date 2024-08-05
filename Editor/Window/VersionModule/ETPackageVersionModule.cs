@@ -69,7 +69,7 @@ namespace ET.PackageManager.Editor
         [HideLabel]
         [OnValueChanged("OnFilterOperationTypeChanged")]
         [ShowIf("CheckUpdateAllEnd")]
-        [PropertyOrder(-999)]
+        [PropertyOrder(-666)]
         public EPackagesFilterOperationType FilterOperationType;
 
         private void OnFilterOperationTypeChanged()
@@ -88,7 +88,7 @@ namespace ET.PackageManager.Editor
         [HideLabel]
         [OnValueChanged("OnFilterTypeChanged")]
         [ShowIf("CheckUpdateAllEnd")]
-        [PropertyOrder(-888)]
+        [PropertyOrder(-666)]
         public EPackagesFilterType FilterType;
 
         private EPackagesFilterType LastFilterType;
@@ -112,6 +112,7 @@ namespace ET.PackageManager.Editor
         [BoxGroup("信息", centerLabel: true)]
         [LabelText("循环依赖同步修改")]
         [ShowIf("CheckUpdateAllEnd")]
+        [PropertyOrder(-444)]
         public bool SyncDependency = true;
 
         [BoxGroup("信息", centerLabel: true)]
@@ -120,6 +121,7 @@ namespace ET.PackageManager.Editor
         [OnValueChanged("OnSearchChanged")]
         [Delayed]
         [ShowInInspector]
+        [PropertyOrder(-444)]
         private string Search = "";
 
         private void OnSearchChanged()
@@ -128,10 +130,10 @@ namespace ET.PackageManager.Editor
             LoadFilterPackageInfoData();
         }
 
-        [Button("更新所有", 50)]
+        /*[Button("更新所有", 50)]
         [GUIColor(0f, 1f, 0f)]
         [BoxGroup("信息", centerLabel: true)]
-        [PropertyOrder(-100)]
+        [PropertyOrder(-555)]
         [ShowIf("ShowIfUpdateAll")]
         public void UpdateAll()
         {
@@ -152,7 +154,7 @@ namespace ET.PackageManager.Editor
         private bool ShowIfUpdateAll()
         {
             return FilterType.HasFlag(EPackagesFilterType.Update) && m_FilterPackageInfoDataList.Count > 0;
-        }
+        }*/
 
         private EnumPrefs<EPackagesFilterType> FilterTypePrefs = new("ETPackageVersionModule_FilterType", null, EPackagesFilterType.ET);
 
@@ -196,7 +198,7 @@ namespace ET.PackageManager.Editor
 
         [Button("同步生成", 50)]
         [GUIColor(1, 1, 0)]
-        [PropertyOrder(-100)]
+        [PropertyOrder(-888)]
         [ShowIf("CheckUpdateAllEnd")]
         public void SyncPackages()
         {
@@ -234,7 +236,7 @@ namespace ET.PackageManager.Editor
             }
         }
 
-        public async Task SyncPackageUpdate(string name = "", string version = "")
+        /*public async Task SyncPackageUpdate(string name = "", string version = "")
         {
             await UpdatePackagesInfo(false);
 
@@ -247,7 +249,7 @@ namespace ET.PackageManager.Editor
             EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectAssemblyReference");
             EditorApplication.ExecuteMenuItem("ET/Loader/UpdateScriptsReferences");
             ETPackageAutoTool.CloseWindowRefresh();
-        }
+        }*/
 
         private bool CheckPackageChange(PackageVersionData packageInfoData)
         {

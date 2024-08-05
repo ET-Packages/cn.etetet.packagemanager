@@ -20,7 +20,7 @@ namespace ET.PackageManager.Editor
         [Button("强制依赖同步", 50)]
         [ButtonGroup("同步")]
         [GUIColor(0f, 0.8f, 1)]
-        [PropertyOrder(-50)]
+        [PropertyOrder(-777)]
         [ShowIf("CheckUpdateAllEnd")]
         private void SyncPackages1()
         {
@@ -113,12 +113,13 @@ namespace ET.PackageManager.Editor
 
         #endregion
 
+        /*
         #region 强制网络同步
 
         [Button("强制网络同步", 50)]
         [ButtonGroup("同步")]
         [GUIColor(0.4f, 0.8f, 1)]
-        [PropertyOrder(-50)]
+        [PropertyOrder(-777)]
         [ShowIf("CheckUpdateAllEnd")]
         private void SyncNetPackages()
         {
@@ -182,6 +183,7 @@ namespace ET.PackageManager.Editor
         }
 
         #endregion
+        */
     }
 }
 #endif
