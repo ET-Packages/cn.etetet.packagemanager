@@ -69,6 +69,7 @@ namespace ET.PackageManager.Editor
         [HideLabel]
         [OnValueChanged("OnFilterOperationTypeChanged")]
         [ShowIf("CheckUpdateAllEnd")]
+        [PropertyOrder(-999)]
         public EPackagesFilterOperationType FilterOperationType;
 
         private void OnFilterOperationTypeChanged()
@@ -87,6 +88,7 @@ namespace ET.PackageManager.Editor
         [HideLabel]
         [OnValueChanged("OnFilterTypeChanged")]
         [ShowIf("CheckUpdateAllEnd")]
+        [PropertyOrder(-888)]
         public EPackagesFilterType FilterType;
 
         private EPackagesFilterType LastFilterType;
@@ -126,6 +128,32 @@ namespace ET.PackageManager.Editor
             LoadFilterPackageInfoData();
         }
 
+        [Button("更新所有", 50)]
+        [GUIColor(0f, 1f, 0f)]
+        [BoxGroup("信息", centerLabel: true)]
+        [PropertyOrder(-100)]
+        [ShowIf("ShowIfUpdateAll")]
+        public void UpdateAll()
+        {
+            UnityTipsHelper.CallBack($"确定更新所有?", () =>
+            {
+                foreach (var data in m_FilterPackageInfoDataList)
+                {
+                    if (data.CanUpdateVersion)
+                    {
+                        data.UpdateDependencies(false);
+                    }
+                }
+
+                SyncPackageUpdate();
+            });
+        }
+
+        private bool ShowIfUpdateAll()
+        {
+            return FilterType.HasFlag(EPackagesFilterType.Update) && m_FilterPackageInfoDataList.Count > 0;
+        }
+
         private EnumPrefs<EPackagesFilterType> FilterTypePrefs = new("ETPackageVersionModule_FilterType", null, EPackagesFilterType.ET);
 
         private EnumPrefs<EPackagesFilterOperationType> FilterOperationTypePrefs = new("ETPackageVersionModule_FilterOperationType");
@@ -141,21 +169,20 @@ namespace ET.PackageManager.Editor
         {
             CheckUpdateAllEnd = false;
             RequestAllResult  = false;
-            PackageHelper.CheckUpdateAll(
-                (result) =>
-                {
-                    CheckUpdateAllEnd = true;
-                    RequestAllResult  = result;
-                    if (!result) return;
-                    Search              = SearchPrefs.Value;
-                    FilterType          = FilterTypePrefs.Value;
-                    LastFilterType      = FilterType;
-                    SyncDependency      = SyncDependencyPrefs.Value;
-                    FilterOperationType = FilterOperationTypePrefs.Value;
-                    LoadAllPackageInfoData();
-                    LoadFilterPackageInfoData();
-                    Inst = this;
-                });
+            PackageHelper.CheckUpdateAll((result) =>
+            {
+                CheckUpdateAllEnd = true;
+                RequestAllResult  = result;
+                if (!result) return;
+                Search              = SearchPrefs.Value;
+                FilterType          = FilterTypePrefs.Value;
+                LastFilterType      = FilterType;
+                SyncDependency      = SyncDependencyPrefs.Value;
+                FilterOperationType = FilterOperationTypePrefs.Value;
+                LoadAllPackageInfoData();
+                LoadFilterPackageInfoData();
+                Inst = this;
+            });
         }
 
         public override void OnDestroy()
@@ -207,7 +234,7 @@ namespace ET.PackageManager.Editor
             }
         }
 
-        public async Task SyncPackageUpdate(string name, string version)
+        public async Task SyncPackageUpdate(string name = "", string version = "")
         {
             await UpdatePackagesInfo(false);
 
@@ -253,8 +280,7 @@ namespace ET.PackageManager.Editor
             {
                 var dependency    = packageInfoData.Dependencies[i];
                 var oldDependency = oldPackageInfo.Dependencies[i];
-                if (dependency.Name != oldDependency.Name ||
-                    dependency.Version != oldDependency.Version)
+                if (dependency.Name != oldDependency.Name || dependency.Version != oldDependency.Version)
                 {
                     return true;
                 }
@@ -270,8 +296,7 @@ namespace ET.PackageManager.Editor
             {
                 var dependency    = packageInfoData.DependenciesSelf[i];
                 var oldDependency = oldPackageInfo.DependenciesSelf[i];
-                if (dependency.Name != oldDependency.Name ||
-                    dependency.Version != oldDependency.Version)
+                if (dependency.Name != oldDependency.Name || dependency.Version != oldDependency.Version)
                 {
                     return true;
                 }
@@ -447,9 +472,7 @@ namespace ET.PackageManager.Editor
 
         private void LoadAllPackageInfoData()
         {
-            m_AllPackageInfoDataDic =
-                    (Dictionary<string, PackageVersionData>)
-                    SerializationUtility.CreateCopy(PackageVersionHelper.PackageVersionAsset.AllPackageVersionData);
+            m_AllPackageInfoDataDic = (Dictionary<string, PackageVersionData>)SerializationUtility.CreateCopy(PackageVersionHelper.PackageVersionAsset.AllPackageVersionData);
 
             //处理依赖检查
             foreach (var data in m_AllPackageInfoDataDic.Values)

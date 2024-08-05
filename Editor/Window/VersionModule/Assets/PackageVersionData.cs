@@ -228,10 +228,13 @@ namespace ET.PackageManager.Editor
         [ShowIf("CanUpdateVersion")]
         public void CheckUpdateVersion()
         {
-            UnityTipsHelper.CallBack($"{Name} 确定更新版本 {Version} >> {LastVersion}", UpdateDependencies);
+            UnityTipsHelper.CallBack($"{Name} 确定更新版本 {Version} >> {LastVersion}", ()=>
+            {
+                UpdateDependencies();
+            });
         }
 
-        public void UpdateDependencies()
+        public void UpdateDependencies(bool syncPackage = true)
         {
             var packagePath = Application.dataPath.Replace("Assets", "Packages") + "/" + Name;
 
@@ -276,7 +279,10 @@ namespace ET.PackageManager.Editor
                 }
             }
 
-            ETPackageVersionModule.Inst.SyncPackageUpdate(Name, LastVersion);
+            if (syncPackage)
+            {
+                ETPackageVersionModule.Inst.SyncPackageUpdate(Name, LastVersion);
+            }
         }
 
         [HideInInspector]
