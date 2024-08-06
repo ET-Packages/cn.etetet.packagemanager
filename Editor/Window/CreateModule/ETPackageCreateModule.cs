@@ -132,8 +132,8 @@ namespace ET.PackageManager.Editor
 
             UnityTipsHelper.Show($"创建成功 [ {PackageName} ]");
 
-            EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectAssemblyReference");
-            EditorApplication.ExecuteMenuItem("ET/Loader/UpdateScriptsReferences");
+            PackageExecuteMenuItemHelper.ETAll();
+
             ETPackageAutoTool.CloseWindowRefresh();
         }
 

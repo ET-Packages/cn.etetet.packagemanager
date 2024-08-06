@@ -229,13 +229,10 @@ namespace ET.PackageManager.Editor
         [ShowIf("CanUpdateVersion")]
         public void CheckUpdateVersion()
         {
-            UnityTipsHelper.CallBack($"{Name} 确定更新版本 {Version} >> {LastVersion}", ()=>
-            {
-                UpdateDependencies();
-            });
+            UnityTipsHelper.CallBack($"{Name} 确定更新版本 {Version} >> {LastVersion}\n \n当前更新为覆盖更新模式!!!\n如果需要合并更新请自行解决!!!\n请确保网络没有问题!!!", UpdateDependencies);
         }
 
-        public void UpdateDependencies(bool syncPackage = true)
+        private void UpdateDependencies()
         {
             var packagePath = Application.dataPath.Replace("Assets", "Packages") + "/" + Name;
 
@@ -256,7 +253,7 @@ namespace ET.PackageManager.Editor
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                Debug.LogError($"删除文件失败 {e.Message}");
                 return;
             }
 
@@ -287,10 +284,9 @@ namespace ET.PackageManager.Editor
                 PackageHelper.Unload();
                 PackageVersionHelper.Unload();
                 EditorUtility.ClearProgressBar();
-                EditorApplication.ExecuteMenuItem("ET/Init/RepairDependencies");
-                EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectFile");
-                EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectAssemblyReference");
-                EditorApplication.ExecuteMenuItem("ET/Loader/UpdateScriptsReferences");
+                PackageExecuteMenuItemHelper.ETAll();
+                AssetDatabase.SaveAssets();
+                EditorApplication.ExecuteMenuItem("Assets/Refresh");
             });
         }
 

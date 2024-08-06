@@ -230,26 +230,11 @@ namespace ET.PackageManager.Editor
             PackageVersionHelper.Unload();
             if (close)
             {
-                EditorApplication.ExecuteMenuItem("ET/Init/RepairDependencies");
+                PackageExecuteMenuItemHelper.ET_Init_RepairDependencies();
                 EditorUtility.ClearProgressBar();
                 ETPackageAutoTool.CloseWindowRefresh();
             }
         }
-
-        /*public async Task SyncPackageUpdate(string name = "", string version = "")
-        {
-            await UpdatePackagesInfo(false);
-
-            //TODO 下面的流程还需要优化
-            //因为每个按钮可能是异步的 无法保证他执行完毕后再执行下一个
-            //目前手动点下面那些按钮 可以解决大部分问题
-            EditorUtility.ClearProgressBar();
-            EditorApplication.ExecuteMenuItem("ET/Init/RepairDependencies");
-            EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectFile");
-            EditorApplication.ExecuteMenuItem("ET/Loader/ReGenerateProjectAssemblyReference");
-            EditorApplication.ExecuteMenuItem("ET/Loader/UpdateScriptsReferences");
-            ETPackageAutoTool.CloseWindowRefresh();
-        }*/
 
         private bool CheckPackageChange(PackageVersionData packageInfoData)
         {
