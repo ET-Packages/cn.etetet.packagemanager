@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace ET.PackageManager.Editor
@@ -12,7 +13,7 @@ namespace ET.PackageManager.Editor
         {
             //有顺序的 别乱动
             ET_Init_RepairDependencies();
-            ET_Loader_ReGenerateProjectFile();
+            ET_Loader_ReGenerateProjectFiles();
             ET_Loader_ReGenerateProjectAssemblyReference();
             ET_Loader_UpdateScriptsReferences();
             ET_Excel_ExcelExporter();
@@ -28,9 +29,9 @@ namespace ET.PackageManager.Editor
             }
         }
 
-        public static void ET_Loader_ReGenerateProjectFile()
+        public static void ET_Loader_ReGenerateProjectFiles()
         {
-            var menuItem = "ET/Loader/ReGenerateProjectFile";
+            var menuItem = "ET/Loader/ReGenerateProjectFiles";
             if (IsMenuItemExists("cn.etetet.loader", "ReGenerateProjectFilesHelper", menuItem))
             {
                 ExecuteMenuItem(menuItem);
@@ -75,7 +76,14 @@ namespace ET.PackageManager.Editor
 
         private static void ExecuteMenuItem(string menuItem)
         {
-            EditorApplication.ExecuteMenuItem(menuItem);
+            try
+            {
+                EditorApplication.ExecuteMenuItem(menuItem);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"执行错误 {menuItem} 请检查 {e.Message}");
+            }
         }
 
         private static bool IsMenuItemExists(string packageName, string csName, string menuName)

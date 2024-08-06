@@ -139,16 +139,19 @@ namespace ET.PackageManager.Editor
         [ShowIf("ShowIfRemovePackage")]
         private void RemovePackage()
         {
-            UnityTipsHelper.CallBackOk($"确定移除 {PackageName}", () =>
+            UnityTipsHelper.CallBackOk($"确定移除 {PackageName}\n \n移除并不包含其他依赖项!!!\n所以如果有其他依赖此包的功能可能会报错!!!\n请确保网络没有问题!!!", () =>
             {
-                EditorUtility.DisplayProgressBar("同步信息", $"移除 {PackageName}...", 0);
+                EditorUtility.DisplayProgressBar("同步信息", $"移除 {PackageName}... 不要动...动了不负责!!", 0);
                 OperationState = true;
                 new PackageRequestRemove(PackageName, (result) =>
                 {
+                    PackageHelper.Unload();
+                    PackageVersionHelper.Unload();
                     OperationState = false;
                     EditorUtility.ClearProgressBar();
                     if (!result) return;
                     m_Install = false;
+                    PackageExecuteMenuItemHelper.ETAll();
                     ETPackageAutoTool.CloseWindowRefresh();
                 });
             });
@@ -177,9 +180,9 @@ namespace ET.PackageManager.Editor
         [HideIf("HideIfInstallPackage")]
         private void InstallPackage()
         {
-            UnityTipsHelper.CallBackOk($"确定安装 {PackageName}", () =>
+            UnityTipsHelper.CallBackOk($"确定安装 {PackageName}\n \n请保证网络流程!!", () =>
             {
-                EditorUtility.DisplayProgressBar("同步信息", $"安装 {PackageName}...", 0);
+                EditorUtility.DisplayProgressBar("同步信息", $"安装{PackageName}中 不要动...动了不负责!! 网络不好可能要等很久...!!", 0);
                 OperationState = true;
                 new PackageRequestAdd(PackageName, (info) =>
                 {
@@ -189,8 +192,11 @@ namespace ET.PackageManager.Editor
                         PackageCurrentVersion = info.version;
                     }
 
-                    EditorUtility.ClearProgressBar();
                     OperationState = false;
+                    PackageHelper.Unload();
+                    PackageVersionHelper.Unload();
+                    EditorUtility.ClearProgressBar();
+                    PackageExecuteMenuItemHelper.ETAll();
                     ETPackageAutoTool.CloseWindowRefresh();
                 });
             });
