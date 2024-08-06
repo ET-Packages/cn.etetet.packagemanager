@@ -114,6 +114,8 @@ namespace ET.PackageManager.Editor
 
             if (!ETPackageVersionModule.Inst.SyncDependency) return;
 
+            ETPackageVersionModule.Inst.ChageDependenciesSelf(packageInfo);
+
             packageInfo = ETPackageVersionModule.Inst.GetPackageInfoData(Name);
             if (packageInfo == null)
             {

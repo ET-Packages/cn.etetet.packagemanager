@@ -40,7 +40,10 @@ namespace ET.PackageManager.Editor
 
             foreach (var data in changeInfo)
             {
-                ChageDependenciesSelf(data);
+                foreach (var refSelf in data.DependenciesSelf)
+                {
+                    refSelf.SyncSelfVersion();
+                }
             }
 
             foreach (var data in m_AllPackageInfoDataDic.Values)
@@ -78,12 +81,10 @@ namespace ET.PackageManager.Editor
             }
         }
 
-        private void ChageDependenciesSelf(PackageVersionData data)
+        public void ChageDependenciesSelf(PackageVersionData data)
         {
             foreach (var refSelf in data.DependenciesSelf)
             {
-                refSelf.SyncSelfVersion();
-
                 var refName     = refSelf.Name;
                 var packageInfo = GetPackageInfoData(refName);
                 if (packageInfo == null)
