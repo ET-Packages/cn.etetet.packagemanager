@@ -110,12 +110,6 @@ namespace ET.PackageManager.Editor
         }
 
         [BoxGroup("信息", centerLabel: true)]
-        [LabelText("循环依赖同步修改")]
-        [ShowIf("CheckUpdateAllEnd")]
-        [PropertyOrder(-444)]
-        public bool SyncDependency = true;
-
-        [BoxGroup("信息", centerLabel: true)]
         [LabelText("搜索")]
         [ShowIf("CheckUpdateAllEnd")]
         [OnValueChanged("OnSearchChanged")]
@@ -129,32 +123,6 @@ namespace ET.PackageManager.Editor
             Search = Search.ToLower();
             LoadFilterPackageInfoData();
         }
-
-        /*[Button("更新所有", 50)]
-        [GUIColor(0f, 1f, 0f)]
-        [BoxGroup("信息", centerLabel: true)]
-        [PropertyOrder(-555)]
-        [ShowIf("ShowIfUpdateAll")]
-        public void UpdateAll()
-        {
-            UnityTipsHelper.CallBack($"确定更新所有?", () =>
-            {
-                foreach (var data in m_FilterPackageInfoDataList)
-                {
-                    if (data.CanUpdateVersion)
-                    {
-                        data.UpdateDependencies(false);
-                    }
-                }
-
-                SyncPackageUpdate();
-            });
-        }
-
-        private bool ShowIfUpdateAll()
-        {
-            return FilterType.HasFlag(EPackagesFilterType.Update) && m_FilterPackageInfoDataList.Count > 0;
-        }*/
 
         private EnumPrefs<EPackagesFilterType> FilterTypePrefs = new("ETPackageVersionModule_FilterType", null, EPackagesFilterType.ET);
 
@@ -179,7 +147,6 @@ namespace ET.PackageManager.Editor
                 Search              = SearchPrefs.Value;
                 FilterType          = FilterTypePrefs.Value;
                 LastFilterType      = FilterType;
-                SyncDependency      = SyncDependencyPrefs.Value;
                 FilterOperationType = FilterOperationTypePrefs.Value;
                 LoadAllPackageInfoData();
                 LoadFilterPackageInfoData();
@@ -192,7 +159,6 @@ namespace ET.PackageManager.Editor
             Inst                           = null;
             SearchPrefs.Value              = Search;
             FilterTypePrefs.Value          = FilterType;
-            SyncDependencyPrefs.Value      = SyncDependency;
             FilterOperationTypePrefs.Value = FilterOperationType;
         }
 

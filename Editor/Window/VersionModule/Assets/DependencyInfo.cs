@@ -56,8 +56,6 @@ namespace ET.PackageManager.Editor
 
             Version = packageInfo.Version;
 
-            if (!ETPackageVersionModule.Inst.SyncDependency) return;
-
             foreach (var info in packageInfo.DependenciesSelf)
             {
                 if (info.Name == SelfName)
@@ -66,6 +64,8 @@ namespace ET.PackageManager.Editor
                     break;
                 }
             }
+
+            ETPackageVersionModule.Inst.ChageDependenciesSelf(packageInfo);
         }
 
         //同步目标的版本 当目标name的版本与当前版本不一致时显示同步按钮
@@ -111,8 +111,6 @@ namespace ET.PackageManager.Editor
             }
 
             Version = packageInfo.Version;
-
-            if (!ETPackageVersionModule.Inst.SyncDependency) return;
 
             ETPackageVersionModule.Inst.ChageDependenciesSelf(packageInfo);
 
