@@ -22,59 +22,35 @@ namespace ET.PackageManager.Editor
 
         public static void ET_Init_RepairDependencies()
         {
-            var menuItem = "ET/Init/RepairDependencies";
-            if (IsMenuItemExists("com.etetet.init", "DependencyResolver", menuItem))
-            {
-                ExecuteMenuItem(menuItem);
-            }
+            ExecuteMenuItem("ET/Init/RepairDependencies");
         }
 
         public static void ET_Loader_ReGenerateProjectFiles()
         {
-            var menuItem = "ET/Loader/ReGenerateProjectFiles";
-            if (IsMenuItemExists("cn.etetet.loader", "ReGenerateProjectFilesHelper", menuItem))
-            {
-                ExecuteMenuItem(menuItem);
-            }
+            ExecuteMenuItem("ET/Loader/ReGenerateProjectFiles");
         }
 
         public static void ET_Loader_ReGenerateProjectAssemblyReference()
         {
-            var menuItem = "ET/Loader/ReGenerateProjectAssemblyReference";
-            if (IsMenuItemExists("cn.etetet.loader", "CodeModeChangeHelper", menuItem))
-            {
-                ExecuteMenuItem(menuItem);
-            }
+            ExecuteMenuItem("ET/Loader/ReGenerateProjectAssemblyReference");
         }
 
         public static void ET_Loader_UpdateScriptsReferences()
         {
-            var menuItem = "ET/Loader/UpdateScriptsReferences";
-            if (IsMenuItemExists("cn.etetet.loader", "ScriptsReferencesHelper", menuItem))
-            {
-                ExecuteMenuItem(menuItem);
-            }
+            ExecuteMenuItem("ET/Loader/UpdateScriptsReferences");
         }
 
         public static void ET_Excel_ExcelExporter()
         {
-            var menuItem = "ET/Excel/ExcelExporter";
-            if (IsMenuItemExists("cn.etetet.excel", "ExcelEditor", menuItem))
-            {
-                ExecuteMenuItem(menuItem);
-            }
+            ExecuteMenuItem("ET/Excel/ExcelExporter");
         }
 
         public static void ET_Proto_Proto2CS()
         {
-            var menuItem = "ET/Proto/Proto2CS";
-            if (IsMenuItemExists("cn.etetet.proto", "ProtoEditor", menuItem))
-            {
-                ExecuteMenuItem(menuItem);
-            }
+            ExecuteMenuItem("ET/Proto/Proto2CS");
         }
 
-        private static void ExecuteMenuItem(string menuItem)
+        public static void ExecuteMenuItem(string menuItem)
         {
             try
             {
@@ -84,35 +60,6 @@ namespace ET.PackageManager.Editor
             {
                 Debug.LogError($"执行错误 {menuItem} 请检查 {e.Message}");
             }
-        }
-
-        private static bool IsMenuItemExists(string packageName, string csName, string menuName)
-        {
-            var packagePath = $"{Application.dataPath}/../Packages/{packageName}";
-
-            if (!System.IO.Directory.Exists(packagePath))
-            {
-                Debug.LogError($"没有找到这个包 {packageName} 请检查 {packagePath}");
-                return false;
-            }
-
-            foreach (var file in System.IO.Directory.GetFiles(packagePath, "*.cs", System.IO.SearchOption.AllDirectories))
-            {
-                if (file.Contains(csName))
-                {
-                    var content = System.IO.File.ReadAllText(file);
-                    if (content.Contains(menuName))
-                    {
-                        return true;
-                    }
-
-                    Debug.LogError($"这个包 {packageName} 这个文件 {csName} 没有找到 {menuName}");
-                    return false;
-                }
-            }
-
-            Debug.LogError($"这个包 {packageName} 没有找到这个文件 {csName}");
-            return false;
         }
     }
 }
