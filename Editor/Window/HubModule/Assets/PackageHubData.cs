@@ -230,6 +230,11 @@ namespace ET.PackageManager.Editor
             if (info == null) return;
             PackageAuthor    = info.author?.name ?? "";
             PackageAuthorURL = info.author?.url ?? "";
+            if (string.IsNullOrEmpty(PackageAuthorURL))
+            {
+                PackageAuthorURL = $"https://github.com/egametang/ET";
+            }
+
             if (info.repository != null)
             {
                 var url = info.repository.url ?? "";
@@ -254,6 +259,11 @@ namespace ET.PackageManager.Editor
             else
             {
                 PackageRepositoryURL = "";
+            }
+
+            if (string.IsNullOrEmpty(PackageRepositoryURL))
+            {
+                PackageRepositoryURL = $"https://github.com/ET-Packages/{PackageName}";
             }
 
             PackageDescription = info.description;
