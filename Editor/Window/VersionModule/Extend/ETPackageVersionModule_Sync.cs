@@ -93,16 +93,7 @@ namespace ET.PackageManager.Editor
                     continue;
                 }
 
-                var oldAllPackage = PackageVersionHelper.PackageVersionAsset.AllPackageVersionData;
-                if (!oldAllPackage.ContainsKey(refName))
-                {
-                    Debug.LogError($"oldAllPackage == null {refName}");
-                    continue;
-                }
-
-                var oldPackageInfo = oldAllPackage[refName];
-
-                if (packageInfo.Version != oldPackageInfo.Version)
+                if (PackageHelper.GetVersionToInt(packageInfo.Version) > PackageHelper.GetVersionToInt(packageInfo.LastVersion))
                 {
                     continue;
                 }
