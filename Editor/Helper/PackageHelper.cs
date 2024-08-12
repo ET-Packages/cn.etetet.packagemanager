@@ -56,7 +56,7 @@ namespace ET.PackageManager.Editor
             m_PackageInfoAsset = null;
         }
 
-        private static bool LoadAsset()
+        public static bool LoadAsset()
         {
             GetAllRegisteredPackages();
 
@@ -295,6 +295,10 @@ namespace ET.PackageManager.Editor
         {
             if (!m_ListRequest.IsCompleted) return;
 
+            EditorApplication.update -= CheckUpdateAllProgress;
+            m_Requesting             =  false;
+            EditorUtility.ClearProgressBar();
+
             if (m_ListRequest.Status == StatusCode.Success)
             {
                 m_PackageInfoAsset.ReSetAllLastPackageInfo();
@@ -319,10 +323,7 @@ namespace ET.PackageManager.Editor
                 m_RequestAllCallback?.Invoke(false);
             }
 
-            EditorApplication.update -= CheckUpdateAllProgress;
-            m_Requesting             =  false;
-            m_RequestAllCallback     =  null;
-            EditorUtility.ClearProgressBar();
+            m_RequestAllCallback = null;
         }
 
         private static HashSet<string> m_RequestTargets = new();

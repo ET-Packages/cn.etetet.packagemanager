@@ -41,7 +41,7 @@ namespace ET.PackageManager.Editor
             EditorUtility.SetDirty(m_PackageVersionAsset);
         }
 
-        private static bool LoadAsset()
+        public static bool LoadAsset()
         {
             m_PackageVersionAsset = AssetDatabase.LoadAssetAtPath<PackageVersionAsset>(ETPackageVersionAssetPath);
 

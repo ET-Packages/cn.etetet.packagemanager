@@ -105,6 +105,18 @@ namespace ET.PackageManager.Editor
 
         #endregion
 
+        [Button("强制本地同步", 50)]
+        [ButtonGroup("同步")]
+        [GUIColor(0.4f, 0.8f, 1)]
+        [PropertyOrder(-777)]
+        [ShowIf("CheckUpdateAllEnd")]
+        private void SyncNetPackages()
+        {
+            ETPackageAutoTool.UnloadAllAssets();
+            ETPackageAutoTool.CloseWindowRefresh();
+            ETPackageAutoTool.OpenWindow();
+        }
+
         /*
         #region 强制网络同步
 

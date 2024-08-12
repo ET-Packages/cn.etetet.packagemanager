@@ -88,12 +88,12 @@ namespace ET.PackageManager.Editor
 
             if (m_Requesting)
             {
-                //Debug.Log($"请求中请稍等...请勿频繁请求");
+                Debug.Log($"请求中请稍等...请勿频繁请求");
                 callback?.Invoke(false);
                 return;
             }
 
-            if (m_CheckUpdateCallback == null)
+            if (m_PackageHubAsset == null)
             {
                 var result = LoadAsset();
                 if (!result)
@@ -147,10 +147,10 @@ namespace ET.PackageManager.Editor
             SyncAllPackageData(tempAllPackageData);
 
             //Debug.LogError($"总数据: {packagesDic.Count}");
+            m_Requesting = false;
             EditorUtility.ClearProgressBar();
             m_CheckUpdateCallback?.Invoke(true);
             m_CheckUpdateCallback = null;
-            m_Requesting          = false;
         }
 
         private static void SyncAllPackageData(Dictionary<string, PackageHubData> datas)
@@ -315,8 +315,7 @@ namespace ET.PackageManager.Editor
         {
             m_RefreshCompleteCount++;
 
-            EditorUtility.DisplayProgressBar("同步信息", $"请求中... {m_RefreshCompleteCount} / {m_RefreshMaxCount}",
-                (float)m_RefreshCompleteCount / m_RefreshMaxCount);
+            EditorUtility.DisplayProgressBar("同步信息", $"请求中... {m_RefreshCompleteCount} / {m_RefreshMaxCount}", (float)m_RefreshCompleteCount / m_RefreshMaxCount);
 
             if (m_RefreshCompleteCount >= m_RefreshMaxCount)
             {
@@ -339,7 +338,13 @@ namespace ET.PackageManager.Editor
                 {
                     if (layer == 1)
                     {
-                        nextCategory[EPackageCategoryType.Other.ToString()].Add(package);
+                        var other = EPackageCategoryType.Other.ToString();
+                        if (!nextCategory.ContainsKey(other))
+                        {
+                            nextCategory.Add(other, new List<PackageHubData>());
+                        }
+
+                        nextCategory[other].Add(package);
                     }
 
                     continue;
