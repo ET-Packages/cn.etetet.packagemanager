@@ -192,8 +192,8 @@ namespace ET.PackageManager.Editor
                 await ChangePackageInfo(packageInfo);
             }
 
-            PackageHelper.Unload();
-            PackageVersionHelper.Unload();
+            ETPackageAutoTool.UnloadAllAssets();
+
             if (close)
             {
                 PackageExecuteMenuItemHelper.ET_Init_RepairDependencies();

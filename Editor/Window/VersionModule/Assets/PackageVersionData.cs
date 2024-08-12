@@ -281,8 +281,7 @@ namespace ET.PackageManager.Editor
             EditorUtility.DisplayProgressBar("同步信息", $"更新{Name}中 不要动...动了不负责!! 网络不好可能要等很久...!!", 0);
             new PackageRequestAdd(Name, (info) =>
             {
-                PackageHelper.Unload();
-                PackageVersionHelper.Unload();
+                ETPackageAutoTool.UnloadAllAssets();
                 EditorUtility.ClearProgressBar();
                 PackageExecuteMenuItemHelper.ETAll();
                 AssetDatabase.SaveAssets();

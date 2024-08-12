@@ -39,6 +39,13 @@ namespace ET.PackageManager.Editor
             EditorApplication.ExecuteMenuItem("Assets/Refresh");
         }
 
+        //强制卸载所有资源
+        public static void UnloadAllAssets()
+        {
+            PackageHelper.Unload();
+            PackageVersionHelper.Unload();
+        }
+
         private OdinMenuTree           m_OdinMenuTree;
         private List<BaseTreeMenuItem> m_AllMenuItem = new List<BaseTreeMenuItem>();
 
@@ -164,6 +171,7 @@ namespace ET.PackageManager.Editor
 
         protected override void Initialize()
         {
+            UnloadAllAssets();
             base.Initialize();
         }
 

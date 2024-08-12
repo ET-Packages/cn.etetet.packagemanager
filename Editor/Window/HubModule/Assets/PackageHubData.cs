@@ -145,8 +145,7 @@ namespace ET.PackageManager.Editor
                 OperationState = true;
                 new PackageRequestRemove(PackageName, (result) =>
                 {
-                    PackageHelper.Unload();
-                    PackageVersionHelper.Unload();
+                    ETPackageAutoTool.UnloadAllAssets();
                     OperationState = false;
                     EditorUtility.ClearProgressBar();
                     if (!result) return;
@@ -193,8 +192,7 @@ namespace ET.PackageManager.Editor
                     }
 
                     OperationState = false;
-                    PackageHelper.Unload();
-                    PackageVersionHelper.Unload();
+                    ETPackageAutoTool.UnloadAllAssets();
                     EditorUtility.ClearProgressBar();
                     PackageExecuteMenuItemHelper.ETAll();
                     ETPackageAutoTool.CloseWindowRefresh();
