@@ -341,7 +341,7 @@ namespace ET.PackageManager.Editor
 
                 LastVersion = lastVersion;
 
-                if (PackageHelper.GetVersionToInt(lastVersion) > PackageHelper.GetVersionToInt(Version))
+                if (PackageHelper.GetVersionToLong(lastVersion) > PackageHelper.GetVersionToLong(Version))
                 {
                     CanUpdateVersion = true;
                 }

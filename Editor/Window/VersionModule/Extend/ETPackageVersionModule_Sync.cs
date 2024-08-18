@@ -93,7 +93,10 @@ namespace ET.PackageManager.Editor
                     continue;
                 }
 
-                if (PackageHelper.GetVersionToInt(packageInfo.Version) > PackageHelper.GetVersionToInt(packageInfo.LastVersion))
+                var currentVersion = PackageHelper.GetVersionToLong(packageInfo.Version);
+                var lastVersion    = PackageHelper.GetVersionToLong(packageInfo.LastVersion);
+
+                if (currentVersion > lastVersion)
                 {
                     continue;
                 }

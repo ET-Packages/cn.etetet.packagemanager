@@ -363,43 +363,54 @@ namespace ET.PackageManager.Editor
 
             m_RequestTargets.Add(name);
 
-            new PackageRequestTarget(name, (packageInfo) =>
-            {
-                m_RequestTargets.Remove(name);
-                if (showBar)
+            new PackageRequestTarget(
+                name,
+                (packageInfo) =>
                 {
-                    EditorUtility.ClearProgressBar();
-                }
+                    m_RequestTargets.Remove(name);
+                    if (showBar)
+                    {
+                        EditorUtility.ClearProgressBar();
+                    }
 
-                if (packageInfo == null) return;
-                var lastVersion = packageInfo.version;
-                if (packageInfo.versions != null)
-                {
-                    lastVersion = packageInfo.versions.latest;
-                }
+                    if (packageInfo == null) return;
+                    var lastVersion = packageInfo.version;
+                    if (packageInfo.versions != null)
+                    {
+                        lastVersion = packageInfo.versions.latest;
+                    }
 
-                ResetPackageLastInfo(packageInfo.name, lastVersion);
-                UpdateAllLastPackageInfo();
-                callback?.Invoke(lastVersion);
-            });
+                    ResetPackageLastInfo(packageInfo.name, lastVersion);
+                    UpdateAllLastPackageInfo();
+                    callback?.Invoke(lastVersion);
+                });
         }
 
-        public static int GetVersionToInt(string version)
+        public static long GetVersionToLong(string version)
         {
-            string input       = version;
-            string numbersOnly = Regex.Replace(input, "[^0-9]", "");
-
-            if (int.TryParse(numbersOnly, out int result))
+            var splitVersion = version.Split(".");
+            if (splitVersion.Length != 3)
             {
-                return result;
-            }
-            else
-            {
-                Debug.LogError("字符串中没有有效的数字可以转换。");
+                Debug.LogError($"请修改 版号写法必须是 A.B.C  不支持: {version}");
                 return 0;
             }
 
-            return 0;
+            var versionStr = "";
+            for (int i = 0; i < splitVersion.Length; i++)
+            {
+                int.TryParse(Regex.Replace(splitVersion[i], "[^0-9]", ""), out int result);
+                if (result > 99999)
+                {
+                    Debug.LogError($"小版本号最高支持5位数 不建议写这么大 请修改 {version}");
+                    result = 99999;
+                }
+
+                versionStr += result.ToString("D5");
+            }
+
+            long.TryParse(versionStr, out long versionInt);
+
+            return versionInt;
         }
     }
 }
