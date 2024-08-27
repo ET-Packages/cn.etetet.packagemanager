@@ -47,6 +47,17 @@ namespace ET.PackageManager.Editor
             foreach (var packageInfo in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
             {
                 var name = packageInfo.name;
+                if (!name.Contains("cn.etetet."))
+                {
+                    continue;
+                }
+
+                var versionLong = GetVersionToLong(packageInfo.version);
+                if (versionLong <= 0)
+                {
+                    continue;
+                }
+
                 m_CurrentRegisteredPackages.Add(name, packageInfo);
             }
         }
