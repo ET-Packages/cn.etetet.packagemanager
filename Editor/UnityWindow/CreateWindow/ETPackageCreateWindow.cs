@@ -129,10 +129,10 @@ namespace ET.PackageManager.Editor
                 });
 
             UnityTipsHelper.Show($"创建成功 [ {PackageName} ]");
-
             PackageExecuteMenuItemHelper.ETAll();
-
-            ETPackageAutoTool.CloseWindowRefresh();
+            CloseWindow();
+            AssetDatabase.SaveAssets();
+            EditorApplication.ExecuteMenuItem("Assets/Refresh");
         }
 
         private bool OnRuntimeRefTypeShowIf()
