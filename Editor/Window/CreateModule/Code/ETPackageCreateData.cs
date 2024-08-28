@@ -9,6 +9,7 @@
         public string                   AssemblyName;
         public string                   DisplayName;
         public string                   Description;
+        public EPackageCreateType       PackageCreateType;
         public EPackageRuntimeRefType   RuntimeRefType;
         public EPackageCreateFolderType FolderType;
     }
