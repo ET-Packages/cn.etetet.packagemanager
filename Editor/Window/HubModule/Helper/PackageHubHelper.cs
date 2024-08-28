@@ -140,13 +140,13 @@ namespace ET.PackageManager.Editor
                     break;
                 }
 
-                //Debug.LogError($" 第{page}页 提取到:{packagesDic.Count - lastCount} 数据");
+                //Debug.LogError($" 第{page}页 提取到:{tempAllPackageData.Count - lastCount} 数据");
                 lastCount = tempAllPackageData.Count;
             }
 
             SyncAllPackageData(tempAllPackageData);
 
-            //Debug.LogError($"总数据: {packagesDic.Count}");
+            //Debug.LogError($"总数据: {tempAllPackageData.Count}");
             m_Requesting = false;
             EditorUtility.ClearProgressBar();
             m_CheckUpdateCallback?.Invoke(true);
@@ -206,7 +206,7 @@ namespace ET.PackageManager.Editor
 
         private static bool ExtractPackages(string html, ref Dictionary<string, PackageHubData> dic)
         {
-            string          packagePattern  = @"href=""/ET-Packages/cn.etetet.(\w+)""";
+            string          packagePattern  = @"title=""cn.etetet.(\w+)""";
             string          downloadPattern = @"</svg>\s*?(\d+)\s*?</span>";
             Regex           packageRegex    = new Regex(packagePattern);
             Regex           downloadRegex   = new Regex(downloadPattern);
