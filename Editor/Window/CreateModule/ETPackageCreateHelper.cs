@@ -62,7 +62,6 @@ namespace ET.PackageManager.Editor
                     {
                         case EPackageCreateType.Runtime:
                             new ETPackageCreatePackageAsmdefCode(data);
-                            new ETPackageCreatePackageIgnoreAsmdefCode(data);
                             break;
                         case EPackageCreateType.Editor:
                             new ETPackageCreatePackageAsmdefEditorCode(data);
@@ -120,6 +119,7 @@ namespace ET.PackageManager.Editor
                 }
             }
 
+            new ETPackageCreatePackageIgnoreAsmdefCode(data);
             new ETPackageCreatePackageJsonCode(data);
             new ETPackageCreatePackageGitCode(data);
         }
