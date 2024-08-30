@@ -18,10 +18,21 @@ namespace ET.PackageManager.Editor
         public string Name;
 
         [OdinSerialize]
+        [ShowInInspector]
         [ReadOnly]
         [LabelText("版本")]
         [OnValueChanged("OnVersionChanged")]
-        public string Version;
+        private string version;
+
+        public string Version
+        {
+            get => version;
+            set
+            {
+                version     = Regex.Replace(value, ETPackageVersionModule.Pattern, "");
+                VersionLong = PackageHelper.GetVersionToLong(version);
+            }
+        }
 
         [OdinSerialize]
         [HideInInspector]
@@ -31,9 +42,12 @@ namespace ET.PackageManager.Editor
         [HideInInspector]
         public bool DependenciesSelf;
 
+        [HideInInspector]
+        public long VersionLong;
+
         private void OnVersionChanged()
         {
-            Version = Regex.Replace(Version, ETPackageVersionModule.Pattern, "");
+            Version = version;
         }
 
         #region 我依赖的版本不是最新时
@@ -54,18 +68,7 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
-            Version = packageInfo.Version;
-
-            foreach (var info in packageInfo.DependenciesSelf)
-            {
-                if (info.Name == SelfName)
-                {
-                    info.Version = Version;
-                    break;
-                }
-            }
-
-            ETPackageVersionModule.Inst.ChageDependenciesSelf(packageInfo);
+            ETPackageVersionModule.Inst.ChageDependencies(packageInfo);
         }
 
         //同步目标的版本 当目标name的版本与当前版本不一致时显示同步按钮
@@ -110,24 +113,7 @@ namespace ET.PackageManager.Editor
                 return;
             }
 
-            Version = packageInfo.Version;
-
-            ETPackageVersionModule.Inst.ChageDependenciesSelf(packageInfo);
-
-            packageInfo = ETPackageVersionModule.Inst.GetPackageInfoData(Name);
-            if (packageInfo == null)
-            {
-                return;
-            }
-
-            foreach (var info in packageInfo.Dependencies)
-            {
-                if (info.Name == SelfName)
-                {
-                    info.Version = Version;
-                    break;
-                }
-            }
+            ETPackageVersionModule.Inst.ChageDependencies(packageInfo);
         }
 
         //依赖我  但是我的版本已经升级了 他哪里的版本还是旧的时候显示同步按钮

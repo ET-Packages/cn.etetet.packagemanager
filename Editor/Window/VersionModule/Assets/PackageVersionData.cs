@@ -27,12 +27,25 @@ namespace ET.PackageManager.Editor
         [VerticalGroup("信息")]
         [PropertyOrder(-45)]
         [OdinSerialize]
-        public string Version;
+        private string version;
+
+        public string Version
+        {
+            get => version;
+            set
+            {
+                version     = Regex.Replace(value, ETPackageVersionModule.Pattern, "");
+                VersionLong = PackageHelper.GetVersionToLong(version);
+                SetVersionValue();
+            }
+        }
+
+        [HideInInspector]
+        public long VersionLong;
 
         private void OnVersionChanged()
         {
-            Version        = Regex.Replace(Version, ETPackageVersionModule.Pattern, "");
-            m_VersionValue = null;
+            Version = version;
         }
 
         [OdinSerialize]
@@ -47,26 +60,20 @@ namespace ET.PackageManager.Editor
         {
             get
             {
-                if (m_VersionValue == null)
-                {
-                    if (string.IsNullOrEmpty(Version))
-                    {
-                        Debug.LogError($"{Name} Version == null");
-                        return null;
-                    }
-
-                    var versionSplit = Regex.Replace(Version, ETPackageVersionModule.Pattern, "").Split('.');
-                    m_VersionValue = new int[versionSplit.Length];
-                    for (int i = 0; i < versionSplit.Length; i++)
-                    {
-                        if (!int.TryParse(versionSplit[i], out m_VersionValue[i]))
-                        {
-                            Debug.LogError($"{versionSplit[i]}不是数字");
-                        }
-                    }
-                }
-
                 return m_VersionValue;
+            }
+        }
+
+        private void SetVersionValue()
+        {
+            var versionSplit = Regex.Replace(Version, ETPackageVersionModule.Pattern, "").Split('.');
+            m_VersionValue = new int[versionSplit.Length];
+            for (int i = 0; i < versionSplit.Length; i++)
+            {
+                if (!int.TryParse(versionSplit[i], out m_VersionValue[i]))
+                {
+                    Debug.LogError($"{versionSplit[i]}不是数字");
+                }
             }
         }
 
@@ -313,7 +320,20 @@ namespace ET.PackageManager.Editor
 
         [HideInInspector]
         [OdinSerialize]
-        public string LastVersion { get; private set; }
+        private string m_LastVersion;
+
+        public string LastVersion
+        {
+            get { return m_LastVersion; }
+            private set
+            {
+                m_LastVersion   = value;
+                LastVersionLong = PackageHelper.GetVersionToLong(value);
+            }
+        }
+
+        [HideInInspector]
+        public long LastVersionLong;
 
         public PackageVersionData(string name, string version)
         {

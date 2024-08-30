@@ -81,10 +81,19 @@ namespace ET.PackageManager.Editor
             }
         }
 
-        public void ChageDependenciesSelf(PackageVersionData data)
+        public void ChageDependencies(PackageVersionData data)
         {
+            var dataVersion = data.Version;
+
             foreach (var refSelf in data.DependenciesSelf)
             {
+                if (refSelf.Version == dataVersion)
+                {
+                    continue;
+                }
+
+                refSelf.Version = dataVersion;
+
                 var refName     = refSelf.Name;
                 var packageInfo = GetPackageInfoData(refName);
                 if (packageInfo == null)
@@ -93,8 +102,17 @@ namespace ET.PackageManager.Editor
                     continue;
                 }
 
-                var currentVersion = PackageHelper.GetVersionToLong(packageInfo.Version);
-                var lastVersion    = PackageHelper.GetVersionToLong(packageInfo.LastVersion);
+                var currentVersion = packageInfo.VersionLong;
+                var lastVersion    = packageInfo.LastVersionLong;
+
+                foreach (var dependencie in packageInfo.Dependencies)
+                {
+                    if (dependencie.Name == data.Name)
+                    {
+                        dependencie.Version = dataVersion;
+                        break;
+                    }
+                }
 
                 if (currentVersion > lastVersion)
                 {
@@ -102,7 +120,7 @@ namespace ET.PackageManager.Editor
                 }
 
                 packageInfo.UpdateVersion6();
-                ChageDependenciesSelf(packageInfo);
+                ChageDependencies(packageInfo);
             }
         }
 
