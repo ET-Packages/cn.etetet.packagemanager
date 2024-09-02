@@ -42,7 +42,8 @@ namespace ET.PackageManager.Editor
 
         public static void ET_Excel_ExcelExporter()
         {
-            ExecuteMenuItem("ET/Excel/ExcelExporter");
+            //关闭此功能 改为手动执行
+            //ExecuteMenuItem("ET/Excel/ExcelExporter");
         }
 
         public static void ET_Proto_Proto2CS()
