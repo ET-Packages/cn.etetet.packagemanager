@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Sirenix.OdinInspector;
-using Sirenix.Serialization;
 using SerializationUtility = Sirenix.Serialization.SerializationUtility;
 using UnityEditor;
 using UnityEngine;
@@ -110,7 +109,7 @@ namespace ET.PackageManager.Editor
         }
 
         [BoxGroup("信息", centerLabel: true)]
-        [LabelText("搜索")]
+        [LabelText("搜索 (支持正则)")]
         [ShowIf("CheckUpdateAllEnd")]
         [OnValueChanged("OnSearchChanged")]
         [Delayed]
@@ -307,6 +306,7 @@ namespace ET.PackageManager.Editor
         [HideLabel]
         [ShowInInspector]
         [ShowIf("CheckUpdateAllEnd")]
+        [PropertyOrder(999)]
         private List<PackageVersionData> m_FilterPackageInfoDataList = new();
 
         private readonly Dictionary<string, PackageVersionData> m_FilterPackageInfoDataDic = new();
@@ -324,11 +324,12 @@ namespace ET.PackageManager.Editor
             m_FilterPackageInfoDataList.Clear();
             m_FilterPackageInfoDataDic.Clear();
             var packagesFilterTypeValues = Enum.GetValues(typeof(EPackagesFilterType));
+
             foreach (var data in m_AllPackageInfoDataDic)
             {
                 var name = data.Key;
 
-                if (!string.IsNullOrEmpty(Search) && !name.Contains(Search))
+                if (!string.IsNullOrEmpty(Search) && !Regex.IsMatch(name, Search))
                 {
                     continue;
                 }
