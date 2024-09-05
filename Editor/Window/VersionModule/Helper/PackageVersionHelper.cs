@@ -87,11 +87,6 @@ namespace ET.PackageManager.Editor
                 infoData.Dependencies = new();
                 foreach (var dependency in dependencies)
                 {
-                    if (!dependency.name.Contains("cn.etetet."))
-                    {
-                        continue;
-                    }
-
                     infoData.Dependencies.Add(
                         new DependencyInfo()
                         {
@@ -114,7 +109,10 @@ namespace ET.PackageManager.Editor
                 {
                     if (!m_AllPackageInfoDataList.ContainsKey(dependency.Name))
                     {
-                        Debug.LogError($"{name}依赖包{dependency.Name}不存在");
+                        if (dependency.Name.Contains("cn.etetet."))
+                        {
+                            Debug.LogError($"{name}依赖包{dependency.Name}不存在");
+                        }
                         continue;
                     }
 

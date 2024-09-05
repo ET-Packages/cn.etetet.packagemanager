@@ -437,7 +437,10 @@ namespace ET.PackageManager.Editor
                 {
                     if (!m_AllPackageInfoDataDic.ContainsKey(dependency.Name))
                     {
-                        Debug.LogError($"{name}依赖包{dependency.Name}不存在");
+                        if (dependency.Name.Contains("cn.etetet."))
+                        {
+                            Debug.LogError($"{name}依赖包{dependency.Name}不存在");
+                        }
                         continue;
                     }
 
