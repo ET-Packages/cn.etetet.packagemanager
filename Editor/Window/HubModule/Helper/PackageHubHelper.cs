@@ -206,8 +206,8 @@ namespace ET.PackageManager.Editor
 
         private static bool ExtractPackages(string html, ref Dictionary<string, PackageHubData> dic)
         {
-            string packagePattern = @"title=""cn.etetet.(\w+)""";
-            string downloadPattern = @"</svg>\s*?(.*?)\s*?</span>\s*?</div>\s*?</div>";
+            string          packagePattern  = @"title=""cn.etetet.(\w+)""";
+            string          downloadPattern = @"</svg>\s*?(.*?)\s*?</span>\s*?</div>\s*?</div>";
             Regex           packageRegex    = new Regex(packagePattern);
             Regex           downloadRegex   = new Regex(downloadPattern);
             MatchCollection packageMatches  = packageRegex.Matches(html);
@@ -428,6 +428,38 @@ namespace ET.PackageManager.Editor
 
             return nextCategory;
         }
+
+        #region BookPackageInfo
+
+        private class PackageInfo
+        {
+            public string Id          { get; set; }
+            public string Name        { get; set; }
+            public string Description { get; set; }
+            public string Price       { get; set; }
+        }
+
+        private static async Task GetBookPackageInfo()
+        {
+            var packagesContent = await GetHtmlContent("https://github.com/egametang/ET/blob/release9.0/Book/8.2ET%20Package%E7%9B%AE%E5%BD%95.md");
+            var rowRegex        = new Regex(@"<tr><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td></tr>", RegexOptions.Compiled);
+            var matches         = rowRegex.Matches(packagesContent.Replace("\n", ""));
+
+            var packages = new List<PackageInfo>();
+            foreach (Match match in matches)
+            {
+                PackageInfo package = new PackageInfo
+                {
+                    Id          = match.Groups[1].Value,
+                    Name        = match.Groups[2].Value,
+                    Description = match.Groups[3].Value,
+                    Price       = match.Groups[4].Value,
+                };
+                packages.Add(package);
+            }
+        }
+
+        #endregion
     }
 }
 #endif
