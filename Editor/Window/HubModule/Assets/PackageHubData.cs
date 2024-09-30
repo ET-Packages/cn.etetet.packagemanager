@@ -79,7 +79,7 @@ namespace ET.PackageManager.Editor
         [ReadOnly]
         [LabelWidth(70)]
         [LabelText("累计下载")]
-        public int DownloadValue;
+        public long DownloadValue;
 
         [TextArea]
         [VerticalGroup("描述")]

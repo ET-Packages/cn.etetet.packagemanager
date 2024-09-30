@@ -206,8 +206,8 @@ namespace ET.PackageManager.Editor
 
         private static bool ExtractPackages(string html, ref Dictionary<string, PackageHubData> dic)
         {
-            string          packagePattern  = @"title=""cn.etetet.(\w+)""";
-            string          downloadPattern = @"</svg>\s*?(\d+)\s*?</span>";
+            string packagePattern = @"title=""cn.etetet.(\w+)""";
+            string downloadPattern = @"</svg>\s*?(.*?)\s*?</span>\s*?</div>\s*?</div>";
             Regex           packageRegex    = new Regex(packagePattern);
             Regex           downloadRegex   = new Regex(downloadPattern);
             MatchCollection packageMatches  = packageRegex.Matches(html);
@@ -220,18 +220,49 @@ namespace ET.PackageManager.Editor
 
             for (int i = 0; i < packageMatches.Count; i++)
             {
-                string packageName      = $"cn.etetet.{packageMatches[i].Groups[1].Value}";
-                string downloadCountStr = downloadMatches[i].Groups[1].Value;
-                int    downloadCount    = int.Parse(downloadCountStr);
+                var packageName      = $"cn.etetet.{packageMatches[i].Groups[1].Value}";
+                var downloadCountStr = downloadMatches[i].Groups[1].Value;
+                var downloadCount    = downloadCountStr.Replace(" ", "");
 
                 dic[packageName] = new()
                 {
                     PackageName   = packageName,
-                    DownloadValue = downloadCount
+                    DownloadValue = ConvertToNumber(downloadCount),
                 };
             }
 
             return true;
+        }
+
+        private static long ConvertToNumber(string input)
+        {
+            double number;
+            string suffix = string.Empty;
+
+            int lastIndex = input.Length - 1;
+            if (char.IsLetter(input[lastIndex]))
+            {
+                suffix = input.Substring(lastIndex);
+                input  = input.Substring(0, lastIndex);
+            }
+
+            if (!double.TryParse(input, out number))
+            {
+                Debug.LogError($"无效的数字格式: {input}");
+                return 0;
+            }
+
+            switch (suffix.ToLower())
+            {
+                case "k":
+                    return (long)(number * 1e3);
+                case "w":
+                    return (long)(number * 1e4);
+                case "b":
+                    return (long)(number * 1e9);
+                default:
+                    return (long)(number);
+            }
         }
 
         public static bool CheckRemove(string packageName, bool showLog = false)
