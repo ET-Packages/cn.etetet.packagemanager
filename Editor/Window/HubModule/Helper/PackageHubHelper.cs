@@ -337,6 +337,7 @@ namespace ET.PackageManager.Editor
                     RequestComplete();
                     continue;
                 }
+
                 var packageName = package.PackageName;
                 package.OperationState = true;
                 new PackageRequestTarget(packageName, (info) =>
@@ -467,7 +468,7 @@ namespace ET.PackageManager.Editor
                     Match  textMatch   = Regex.Match(description, textPattern);
                     if (urlMatch.Success && textMatch.Success)
                     {
-                        url = urlMatch.Groups[1].Value;
+                        url         = urlMatch.Groups[1].Value;
                         description = $"{textMatch.Groups[1].Value}\n{url}";
                     }
                 }

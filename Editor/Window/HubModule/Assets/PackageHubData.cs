@@ -64,9 +64,9 @@ namespace ET.PackageManager.Editor
 
         private void PayPackageTips()
         {
-            UnityTipsHelper.Show("请ET群联系群主熊猫\nET群: 474643097\nET新手群: 688514974");
+            UnityTipsHelper.Show("请ET群联系群主熊猫\nQQ: 80081771\nET群: 474643097\nET新手群: 688514974");
         }
-        
+
         [TableColumnWidth(250, Resizable = false)]
         [VerticalGroup("信息")]
         [NonSerialized]
