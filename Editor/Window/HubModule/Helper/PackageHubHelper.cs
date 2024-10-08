@@ -144,6 +144,8 @@ namespace ET.PackageManager.Editor
                 lastCount = tempAllPackageData.Count;
             }
 
+            await GetBookPackageInfo(tempAllPackageData);
+
             SyncAllPackageData(tempAllPackageData);
 
             //Debug.LogError($"总数据: {tempAllPackageData.Count}");
@@ -330,8 +332,12 @@ namespace ET.PackageManager.Editor
 
             foreach (var package in allPackages)
             {
+                if (package.PayPackage)
+                {
+                    RequestComplete();
+                    continue;
+                }
                 var packageName = package.PackageName;
-
                 package.OperationState = true;
                 new PackageRequestTarget(packageName, (info) =>
                 {
@@ -431,31 +437,67 @@ namespace ET.PackageManager.Editor
 
         #region BookPackageInfo
 
-        private class PackageInfo
-        {
-            public string Id          { get; set; }
-            public string Name        { get; set; }
-            public string Description { get; set; }
-            public string Price       { get; set; }
-        }
-
-        private static async Task GetBookPackageInfo()
+        private static async Task GetBookPackageInfo(Dictionary<string, PackageHubData> dic)
         {
             var packagesContent = await GetHtmlContent("https://github.com/egametang/ET/blob/release9.0/Book/8.2ET%20Package%E7%9B%AE%E5%BD%95.md");
             var rowRegex        = new Regex(@"<tr><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td></tr>", RegexOptions.Compiled);
             var matches         = rowRegex.Matches(packagesContent.Replace("\n", ""));
 
-            var packages = new List<PackageInfo>();
             foreach (Match match in matches)
             {
-                PackageInfo package = new PackageInfo
+                var name = match.Groups[2].Value;
+                if (!string.IsNullOrEmpty(name))
+                {
+                    var   pattern   = @"cn.etetet.(\w+)";
+                    Match nameMatch = Regex.Match(name, pattern);
+                    if (nameMatch.Success)
+                    {
+                        name = nameMatch.Value;
+                    }
+                }
+
+                var description = match.Groups[3].Value;
+
+                var url = "";
+                if (!string.IsNullOrEmpty(description))
+                {
+                    string urlPattern  = @"href=""(https?://[^""]+)""";
+                    string textPattern = @">([^<]+)<";
+                    Match  urlMatch    = Regex.Match(description, urlPattern);
+                    Match  textMatch   = Regex.Match(description, textPattern);
+                    if (urlMatch.Success && textMatch.Success)
+                    {
+                        url = urlMatch.Groups[1].Value;
+                        description = $"{textMatch.Groups[1].Value}\n{url}";
+                    }
+                }
+
+                PackagePayInfo package = new()
                 {
                     Id          = match.Groups[1].Value,
-                    Name        = match.Groups[2].Value,
-                    Description = match.Groups[3].Value,
+                    Name        = name,
+                    Description = description,
                     Price       = match.Groups[4].Value,
+                    Url         = url,
                 };
-                packages.Add(package);
+
+                var packageName = package.Name;
+                if (!string.IsNullOrEmpty(packageName) &&
+                    !string.IsNullOrEmpty(package.Id) &&
+                    !string.IsNullOrEmpty(package.Price))
+                {
+                    if (!dic.ContainsKey(packageName))
+                    {
+                        dic[packageName] = new()
+                        {
+                            PackageName        = packageName,
+                            DownloadValue      = long.MaxValue,
+                            PayInfo            = package,
+                            PackageDescription = package.Description,
+                            PackageCategory    = "Pay",
+                        };
+                    }
+                }
             }
         }
 
