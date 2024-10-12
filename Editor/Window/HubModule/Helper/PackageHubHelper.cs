@@ -489,10 +489,12 @@ namespace ET.PackageManager.Editor
                 {
                     if (!dic.ContainsKey(packageName))
                     {
+                        int.TryParse(package.Id.Replace(" ",""), out int idInt);
+
                         dic[packageName] = new()
                         {
                             PackageName        = packageName,
-                            DownloadValue      = long.MaxValue,
+                            DownloadValue      = long.MaxValue - idInt,
                             PayInfo            = package,
                             PackageDescription = package.Description,
                             PackageCategory    = "Pay",
