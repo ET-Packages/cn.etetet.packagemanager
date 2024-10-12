@@ -17,7 +17,7 @@ namespace ET.PackageManager.Editor
         [MenuItem("ET/ETPackage 包管理自动化工具")]
         public static void OpenWindow()
         {
-            var window = GetWindow<ETPackageAutoTool>();
+            var window = GetWindow<ETPackageAutoTool>("ET包管理");
             if (window != null)
                 window.Show();
         }

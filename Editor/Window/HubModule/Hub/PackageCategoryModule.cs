@@ -56,13 +56,13 @@ namespace ET.PackageManager.Editor
             }
             else
             {
-                var search = this.Search.ToLower();
+                var search = Search?.ToLower() ?? "";
                 ShowPackages.Clear();
                 foreach (var package in AllPackages)
                 {
-                    var name   = package.PackageName.ToLower();
-                    var author = package.PackageAuthor.ToLower();
-                    var desc   = package.PackageDescription.ToLower();
+                    var name   = package.PackageName?.ToLower() ?? "";
+                    var author = package.PackageAuthor?.ToLower() ?? "";
+                    var desc   = package.PackageDescription?.ToLower() ?? "";
                     if (name.Contains(search) || author.Contains(search) || desc.Contains(search))
                     {
                         ShowPackages.Add(package);
@@ -111,7 +111,7 @@ namespace ET.PackageManager.Editor
         private void GetNextCategory(int layer)
         {
             var lastPath     = m_CategoryData.CategoryPath.Replace("库/", "");
-            var nextCategory = PackageHubHelper.GetNextCategoryData(this.ShowPackages, layer, lastPath);
+            var nextCategory = PackageHubHelper.GetNextCategoryData(ShowPackages, layer, lastPath);
 
             if (nextCategory is not { Count: > 0 }) return;
 
