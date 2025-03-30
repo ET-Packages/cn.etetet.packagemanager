@@ -167,7 +167,12 @@ namespace ET.PackageManager.Editor
         [ShowIf("CheckUpdateAllEnd")]
         public void SyncPackages()
         {
-            UnityTipsHelper.CallBack($"确定同步生成当前所有改动版本?", () => { UpdatePackagesInfo(); });
+            UnityTipsHelper.CallBack($"确定同步生成当前所有改动版本?", () =>
+            {
+                #pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+                UpdatePackagesInfo();
+                #pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+            });
         }
 
         [Button("文档", 30, Icon = SdfIconType.Link45deg, IconAlignment = IconAlignment.LeftOfText)]
@@ -441,6 +446,7 @@ namespace ET.PackageManager.Editor
                         {
                             Debug.LogError($"{name}依赖包{dependency.Name}不存在");
                         }
+
                         continue;
                     }
 
