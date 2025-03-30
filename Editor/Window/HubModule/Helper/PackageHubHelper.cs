@@ -114,7 +114,16 @@ namespace ET.PackageManager.Editor
             m_CheckUpdateCallback            = callback;
             m_Requesting                     = true;
 
-            RefreshPackages();
+            try
+            {
+                #pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+                RefreshPackages();
+                #pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(ex);
+            }
         }
 
         private static async Task RefreshPackages()
@@ -353,7 +362,8 @@ namespace ET.PackageManager.Editor
         {
             m_RefreshCompleteCount++;
 
-            EditorUtility.DisplayProgressBar("同步信息", $"请求中... {m_RefreshCompleteCount} / {m_RefreshMaxCount}", (float)m_RefreshCompleteCount / m_RefreshMaxCount);
+            EditorUtility.DisplayProgressBar("同步信息", $"请求中... {m_RefreshCompleteCount} / {m_RefreshMaxCount}",
+                (float)m_RefreshCompleteCount / m_RefreshMaxCount);
 
             if (m_RefreshCompleteCount >= m_RefreshMaxCount)
             {
@@ -366,7 +376,9 @@ namespace ET.PackageManager.Editor
 
         #endregion
 
-        public static Dictionary<string, List<PackageHubData>> GetNextCategoryData(List<PackageHubData> allPackages, int layer, string lastAllPath = "")
+        public static Dictionary<string, List<PackageHubData>> GetNextCategoryData(List<PackageHubData> allPackages,
+                                                                                   int                  layer,
+                                                                                   string               lastAllPath = "")
         {
             Dictionary<string, List<PackageHubData>> nextCategory = new();
             foreach (var package in allPackages)
@@ -489,7 +501,7 @@ namespace ET.PackageManager.Editor
                 {
                     if (!dic.ContainsKey(packageName))
                     {
-                        int.TryParse(package.Id.Replace(" ",""), out int idInt);
+                        int.TryParse(package.Id.Replace(" ", ""), out int idInt);
 
                         dic[packageName] = new()
                         {
