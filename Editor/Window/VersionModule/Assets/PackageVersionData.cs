@@ -234,9 +234,21 @@ namespace ET.PackageManager.Editor
         [Button("有最新版本可更新", 50)]
         [VerticalGroup("信息")]
         [ShowIf("CanUpdateVersion")]
+        [ButtonGroup("信息/更新")]
         public void CheckUpdateVersion()
         {
             UnityTipsHelper.CallBack($"{Name} 确定更新版本 {Version} >> {LastVersion}\n \n当前更新为覆盖更新模式!!!\n如果需要合并更新请自行解决!!!\n请确保网络没有问题!!!", UpdateDependencies);
+        }
+
+        [Button("更新日志", Icon = SdfIconType.Github, IconAlignment = IconAlignment.LeftOfText)]
+        [GUIColor(0.5f, 0.5f, 0.5f)]
+        [VerticalGroup("信息")]
+        [ShowIf("CanUpdateVersion")]
+        [ButtonGroup("信息/更新")]
+        public void OpenPackageURL()
+        {
+            if (string.IsNullOrEmpty(Name)) return;
+            Application.OpenURL($"https://github.com/ET-Packages/{Name}");
         }
 
         private void UpdateDependencies()

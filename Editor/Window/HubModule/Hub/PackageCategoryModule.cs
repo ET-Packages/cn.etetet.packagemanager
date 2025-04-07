@@ -27,7 +27,7 @@ namespace ET.PackageManager.Editor
             PackageHubHelper.RefreshRequestAll(ShowPackages);
         }
 
-        [TableList(DrawScrollView = true, IsReadOnly = true)]
+        [TableList(DrawScrollView = true, IsReadOnly = true, AlwaysExpanded = true)]
         [BoxGroup("所有包", centerLabel: true)]
         [HideLabel]
         [ShowInInspector]
